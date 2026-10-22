@@ -1,0 +1,17 @@
+# Core parsing
+scapy>=2.5.0
+dpkt>=1.9.8
+
+# LLM / structured output
+openai>=1.40.0
+pydantic>=2.7.0
+
+# Config / env
+python-dotenv>=1.0.1
+PyYAML>=6.0.1
+
+# UI (optional - interactive analyst chat)
+chainlit>=1.1.0
+
+# Testing
+pytest>=8.0.0

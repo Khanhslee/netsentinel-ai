@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netsentinel-ai"
+version = "0.1.0"
+description = "NetSentinel AI - intelligent network anomaly detection copilot & threat analysis"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "scapy>=2.5.0",
+    "dpkt>=1.9.8",
+    "openai>=1.40.0",
+    "pydantic>=2.7.0",
+    "python-dotenv>=1.0.1",
+    "PyYAML>=6.0.1",
+]
+
+[project.optional-dependencies]
+ui = ["chainlit>=1.1.0"]
+dev = ["pytest>=8.0.0"]
+
+[project.scripts]
+netsentinel = "netsentinel.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+netsentinel = ["py.typed"]

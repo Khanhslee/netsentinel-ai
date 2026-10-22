@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+.env.local
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Chainlit auto-generated runtime files
+.chainlit/
+
+# Project artifacts
+data/*.pcap
+data/*.pcapng
+*.log

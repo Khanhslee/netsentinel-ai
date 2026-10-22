@@ -1,0 +1,21 @@
+# NetSentinel AI configuration
+detection:
+  beacon_min_connections: 5        # min number of repeated sessions to flag a beacon
+  beacon_min_interval: 5.0         # min gap (seconds) between beacon sessions
+  beacon_jitter_ratio: 0.15        # std(interval)/mean(interval) must be below this
+  dga_entropy_threshold: 3.4       # Shannon entropy above which a domain looks DGA-ish
+  dga_min_length: 12               # min domain length for DGA heuristic
+  nxdomain_storm_threshold: 10     # distinct NXDOMAIN names under one SLD to flag
+  dns_tunnel_query_threshold: 8    # repeated queries to one domain to flag tunneling
+  dns_tunnel_max_label_len: 20     # label length hint for DNS tunneling
+  scan_min_ports: 20               # distinct ports probed to flag a port scan
+  scan_window_seconds: 60.0        # time window for scan aggregation
+  exfil_min_bytes: 1000000         # min outbound bytes to flag exfiltration
+  exfil_upload_ratio: 10.0         # src_bytes/dst_bytes ratio hinting at upload
+
+llama:
+  api_key: ""                      # prefer LLAMA_API_KEY env var
+  base_url: "https://api.llama.com/v1"
+  model: "meta/llama-4-maverick-17b-128e-instruct-fp8"
+  timeout: 60.0
+  use_json_schema: true
