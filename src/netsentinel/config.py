@@ -96,7 +96,7 @@ def _default_config_path() -> Path:
     """Locate config/config.yaml relative to the repo root."""
     candidates = [
         Path.cwd() / "config" / "config.yaml",
-        Path(__file__).resolve().parents[3] / "config" / "config.yaml",
+        Path(__file__).resolve().parents[2] / "config" / "config.yaml",
     ]
     for c in candidates:
         if c.exists():

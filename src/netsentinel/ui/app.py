@@ -6,15 +6,23 @@ Install the optional UI dependency first:  pip install chainlit
 from __future__ import annotations
 
 import os
+import sys
+from pathlib import Path
+
+# Chainlit loads this file as a *standalone* module (no parent package), so make
+# the `src` directory importable and use absolute imports instead of relative ones.
+_SRC = Path(__file__).resolve().parents[2]
+if str(_SRC) not in sys.path:
+    sys.path.insert(0, str(_SRC))
 
 try:
     import chainlit as cl
 except ImportError:  # pragma: no cover - Chainlit is an optional dependency
     cl = None
 
-from ..config import Settings
-from ..pipeline import AnalysisResult, analyze_path
-from .chat import answer_query
+from netsentinel.config import Settings
+from netsentinel.pipeline import AnalysisResult, analyze_path
+from netsentinel.ui.chat import answer_query
 
 
 async def on_chat_start():
