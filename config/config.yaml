@@ -13,9 +13,12 @@ detection:
   exfil_min_bytes: 1000000         # min outbound bytes to flag exfiltration
   exfil_upload_ratio: 10.0         # src_bytes/dst_bytes ratio hinting at upload
 
-llama:
-  api_key: ""                      # prefer LLAMA_API_KEY env var
-  base_url: "https://api.llama.com/v1"
-  model: "meta/llama-4-maverick-17b-128e-instruct-fp8"
-  timeout: 60.0
+meta:
+  api_key: ""                      # META_API_KEY > MODEL_API_KEY > LLAMA_API_KEY
+  base_url: "https://api.meta.ai/v1"
+  triage_model: "muse-spark-1.3"
+  reasoning_model: "muse-wonder-1.0"
+  timeout: 20.0
+  max_tokens: 2400
+  enable_triage: true
   use_json_schema: true

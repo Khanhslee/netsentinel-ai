@@ -87,9 +87,85 @@ EVENT_MITRE: Dict[str, Dict[str, Any]] = {
 }
 
 
+# ---------------------------------------------------------------------------
+# Kill-chain model
+# ---------------------------------------------------------------------------
+#: Lockheed-Martin kill-chain stages in attack order. Used by the correlator to
+#: turn a bag of events into an ordered attack narrative.
+KILL_CHAIN_STAGES: tuple = (
+    "Reconnaissance",
+    "Weaponization",
+    "Delivery",
+    "Exploitation",
+    "Installation",
+    "Command and Control",
+    "Actions on Objectives",
+)
+
+#: event_type -> kill-chain stage
+EVENT_KILL_CHAIN: Dict[str, str] = {
+    "port_scan": "Reconnaissance",
+    "dga": "Command and Control",
+    "nxdomain_storm": "Command and Control",
+    "beacon": "Command and Control",
+    "dns_tunneling": "Command and Control",
+    "exfiltration": "Actions on Objectives",
+}
+
+#: Canonical ATT&CK tactic slugs (Navigator uses lower-case, dash-separated).
+_NAVIGATOR_TACTICS = {
+    "Reconnaissance": "reconnaissance",
+    "Resource Development": "resource-development",
+    "Initial Access": "initial-access",
+    "Execution": "execution",
+    "Persistence": "persistence",
+    "Privilege Escalation": "privilege-escalation",
+    "Defense Evasion": "defense-evasion",
+    "Credential Access": "credential-access",
+    "Discovery": "discovery",
+    "Lateral Movement": "lateral-movement",
+    "Collection": "collection",
+    "Command and Control": "command-and-control",
+    "Exfiltration": "exfiltration",
+    "Impact": "impact",
+}
+
+
 def mitre_for(event_type: str) -> Dict[str, Any]:
     """Return the MITRE mapping for an event type (empty dict if unknown)."""
     return EVENT_MITRE.get(event_type, {})
+
+
+def technique_id_for(event_type: str) -> str:
+    """Preferred technique id (sub-technique when available)."""
+    info = mitre_for(event_type)
+    return info.get("sub_technique_id") or info.get("technique_id", "")
+
+
+def tactic_for(event_type: str) -> str:
+    return mitre_for(event_type).get("tactic", "")
+
+
+def kill_chain_stage_for(event_type: str) -> str:
+    return EVENT_KILL_CHAIN.get(event_type, "Exploitation")
+
+
+def kill_chain_order(stage: str) -> int:
+    """Position of a stage in the kill chain (unknown stages sort last)."""
+    try:
+        return KILL_CHAIN_STAGES.index(stage)
+    except ValueError:
+        return len(KILL_CHAIN_STAGES)
+
+
+def navigator_tactic(tactic: str) -> str:
+    """Convert a human tactic name into its ATT&CK Navigator slug."""
+    return _NAVIGATOR_TACTICS.get(tactic, tactic.strip().lower().replace(" ", "-"))
+
+
+def tactic_description(event_type: str) -> str:
+    info = mitre_for(event_type)
+    return f"{info.get('technique_id', '')} {info.get('name', '')}".strip()
 
 
 def technique_label(info: Dict[str, Any]) -> str:

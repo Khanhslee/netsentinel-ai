@@ -3,15 +3,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 from .config import Settings
 from .engine.detector import DetectionReport, detect
+from .engine.correlator import CorrelationReport, correlate_events
 from .ingest import parse_csv, parse_json, parse_pcap, parse_zeek_conn
-from .llm.client import LlamaClient
+from .llm.client import MetaModelClient
 from .llm.schemas import ThreatAssessment
 from .models import Flow
-from .response import generate_playbook, generate_suricata_rules, generate_yara_rule
+from .response import generate_playbook, generate_yara_rule
+from .response.suricata import build_rule_set
 
 _EXT_HANDLERS = {
     ".pcap": parse_pcap,
@@ -40,6 +43,10 @@ class AnalysisResult:
     yara_rules: List[str] = field(default_factory=list)
     playbooks: List[dict] = field(default_factory=list)
     llm_available: bool = False
+    correlation: CorrelationReport = field(default_factory=CorrelationReport)
+    routing: dict = field(default_factory=dict)
+    source_path: str = ""
+    generated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def vulnerabilities_by_severity(self) -> Dict[str, int]:
         counts: Dict[str, int] = {}
@@ -49,8 +56,16 @@ class AnalysisResult:
 
     def to_dict(self) -> dict:
         return {
+            "schema_version": "2.0",
+            "generated_at": self.generated_at,
+            "source_path": self.source_path,
             "flows_count": self.report.flows_count,
+            "stats": self.report.stats,
+            "severity_counts": self.vulnerabilities_by_severity(),
             "llm_available": self.llm_available,
+            "routing": self.routing,
+            "correlation": self.correlation.to_dict(),
+            "campaigns": [c.to_dict() for c in self.correlation.campaigns],
             "events": [
                 {
                     "event": e.to_dict(),
@@ -73,20 +88,22 @@ def analyze_flows(
     settings = settings or Settings.load()
     report = detect(flows, settings.detection)
 
-    client = LlamaClient(settings.llama)
-    assessments: List[ThreatAssessment] = []
-    suricata_rules: List[str] = []
-    yara_rules: List[str] = []
-    playbooks: List[dict] = []
-
-    for event in report.events:
-        assessment = (
-            client.analyze_event(event) if use_llm else ThreatAssessment.from_event(event)
+    correlation = correlate_events(report.events)
+    client = MetaModelClient(settings.meta)
+    assessments = (
+        client.analyze_events(
+            report.events, campaigns=[c.to_dict() for c in correlation.campaigns]
         )
-        assessments.append(assessment)
-        suricata_rules.extend(generate_suricata_rules(event))
-        yara_rules.append(generate_yara_rule(event))
-        playbooks.append(generate_playbook(event, assessment))
+        if use_llm else [ThreatAssessment.from_event(event) for event in report.events]
+    )
+    suricata_rules = build_rule_set(report.events)
+    yara_rules = list(dict.fromkeys(generate_yara_rule(event) for event in report.events))
+    playbooks = [generate_playbook(event, assessment)
+                 for event, assessment in zip(report.events, assessments)]
+    routing = client.routing_summary()
+    if not use_llm:
+        routing = {**routing, "mode": "offline-deterministic",
+                   "fallback_reason": "Offline mode requested"}
 
     return AnalysisResult(
         report=report,
@@ -94,7 +111,9 @@ def analyze_flows(
         suricata_rules=suricata_rules,
         yara_rules=yara_rules,
         playbooks=playbooks,
-        llm_available=client.available() and use_llm,
+        llm_available=use_llm and any(a.reasoning_source == "meta-model-api" for a in assessments),
+        correlation=correlation,
+        routing=routing,
     )
 
 
@@ -105,4 +124,6 @@ def analyze_path(
 ) -> AnalysisResult:
     """Load flows from file path and run the full pipeline."""
     flows = load_flows(path)
-    return analyze_flows(flows, settings=settings, use_llm=use_llm)
+    result = analyze_flows(flows, settings=settings, use_llm=use_llm)
+    result.source_path = Path(path).as_posix()
+    return result

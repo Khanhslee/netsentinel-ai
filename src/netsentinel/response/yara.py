@@ -1,59 +1,50 @@
-"""YARA rule generation from suspicious events."""
+"""Portable YARA rules for hunting observed indicators in files and memory.
+
+These are indicator hunts, not malware-family signatures or packet decoders.
+"""
 from __future__ import annotations
 
+import re
+from datetime import datetime, timezone
+
+from ..mitre import technique_id_for
 from ..models import SuspiciousEvent, stable_hash
 
 
 def generate_yara_rule(event: SuspiciousEvent) -> str:
-    """Generate a YARA rule matching the event's domain/IOC strings."""
-    rule_name = f"NetSentinel_{event.event_type}_{event.event_id}"
-
-    strings = []
-    condition_parts = ["any of them"]
-    for ioc in event.iocs:
-        if _looks_like_ascii_string(ioc) and _looks_like_domain(ioc):
-            strings.append(_yara_string(f"$d{len(strings)}", ioc))
-    if not strings:
-        # Fall back to the source IP/port as printable strings.
-        for ioc in event.iocs:
-            if _looks_like_ascii_string(ioc):
-                strings.append(_yara_string(f"$s{len(strings)}", ioc))
-    if not strings:
-        src = event.src_ip or "none"
-        strings = [_yara_string("$s0", src)]
-        condition_parts = ["$s0"]
-        rule_name = f"{rule_name}_src"
-
-    body = []
-    for name, value in strings:
-        body.append(f"        {name} = {value}")
-    body.append("    condition:")
-    body.append(f"        {condition_parts[0]}")
-
-    return (
-        f"rule {rule_name}\n"
-        "{\n"
-        "    meta:\n"
-        f"        description = \"NetSentinel {event.event_type} detection\"\n"
-        f"        severity = \"{event.severity}\"\n"
-        f"        mitre_technique = \"{event.mitre_technique}\"\n"
-        f"        author = \"NetSentinel AI\"\n"
-        f"        sample_id = \"{event.event_id}\"\n"
-        "    strings:\n"
-        + "\n".join(body)
-        + "\n}\n"
-    )
+    """Render one syntactically safe rule, with no invented payload signatures."""
+    kind = re.sub(r"[^A-Za-z0-9_]", "_", event.event_type)
+    values = list(dict.fromkeys(str(i) for i in event.iocs if str(i)))
+    values = values[:50] or [event.src_ip or "NetSentinel_no_observed_indicator"]
+    name = f"NetSentinel_{kind}_{stable_hash(event.event_id + '|' + '|'.join(values))}"
+    technique = event.mitre_technique or technique_id_for(event.event_type)
+    metadata = {
+        "author": "NetSentinel AI - Meta Muse Wonder",
+        "description": f"Observed {event.event_type} IOC hunt; validate matches with endpoint telemetry",
+        "mitre_attck": technique,
+        "mitre_technique": technique,
+        "date": datetime.now(timezone.utc).date().isoformat(),
+        "severity": event.severity,
+        "source_event": event.event_id,
+    }
+    lines = [f"rule {name}", "{", "    meta:"]
+    lines.extend(f'        {key} = "{_escape(value)}"' for key, value in metadata.items())
+    lines.append("    strings:")
+    lines.extend(f'        $ioc_{i} = "{_escape(value)}" ascii nocase' for i, value in enumerate(values))
+    lines.extend(["    condition:", "        any of them", "}", ""])
+    return "\n".join(lines)
 
 
-def _yara_string(name: str, value: str) -> tuple:
-    # YARA wants double-quote delimited ASCII with escaped quotes/backslashes.
-    escaped = value.replace("\\", "\\\\").replace('"', '\\"')
-    return name, f'"{escaped}" nocase'
-
-
-def _looks_like_domain(value: str) -> bool:
-    return "." in value
-
-
-def _looks_like_ascii_string(value: str) -> bool:
-    return all(32 <= ord(ch) < 127 for ch in value)
+def _escape(value: str) -> str:
+    """Encode arbitrary telemetry as UTF-8 bytes in a YARA string literal."""
+    output = []
+    for byte in str(value).encode("utf-8"):
+        if byte == 34:
+            output.append(r'\"')
+        elif byte == 92:
+            output.append(r"\\")
+        elif 32 <= byte < 127:
+            output.append(chr(byte))
+        else:
+            output.append(f"\\x{byte:02x}")
+    return "".join(output)

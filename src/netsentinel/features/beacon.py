@@ -1,12 +1,13 @@
 """Beacon / C2 detection: repeated connections at a near-constant cadence."""
 from __future__ import annotations
 
+import statistics
 from typing import List
 
 from ..config import DetectionConfig
-from ..mitre import mitre_for
+from ..mitre import kill_chain_stage_for, mitre_for
 from ..models import Flow, SuspiciousEvent
-from .flows import group_by, interarrival_stats
+from .flows import coefficient_of_variation, group_by, interarrival_stats
 
 
 def detect_beacons(flows: List[Flow], cfg: DetectionConfig) -> List[SuspiciousEvent]:
@@ -26,6 +27,10 @@ def detect_beacons(flows: List[Flow], cfg: DetectionConfig) -> List[SuspiciousEv
         jitter = std / mean
         if jitter > cfg.beacon_jitter_ratio:
             continue
+
+        ordered = sorted(t for t in times if t > 0)
+        deltas = [b - a for a, b in zip(ordered, ordered[1:])]
+        first_seen, last_seen = (ordered[0], ordered[-1]) if ordered else (0.0, 0.0)
 
         severity = _beacon_severity(jitter)
         events.append(
@@ -47,11 +52,29 @@ def detect_beacons(flows: List[Flow], cfg: DetectionConfig) -> List[SuspiciousEv
                     "mean_interval": round(mean, 3),
                     "std_interval": round(std, 3),
                     "jitter_ratio": round(jitter, 4),
+                    # --- forensic evidence (Phase 2) -------------------------
+                    "coefficient_of_variation": coefficient_of_variation(mean, std),
+                    "mean_delta_t_sec": round(mean, 3),
+                    "std_delta_t_sec": round(std, 3),
+                    "median_delta_t_sec": round(statistics.median(deltas), 3) if deltas else 0.0,
+                    "min_delta_t_sec": round(min(deltas), 3) if deltas else 0.0,
+                    "max_delta_t_sec": round(max(deltas), 3) if deltas else 0.0,
+                    "jitter_pct": round(jitter * 100, 2),
+                    "periodicity_score": round(max(0.0, 1.0 - jitter), 4),
+                    "observation_window_sec": round(last_seen - first_seen, 2),
+                    "first_seen": first_seen,
+                    "last_seen": last_seen,
+                    "destination": f"{dst_ip}:{dst_port}",
                 },
                 mitre_technique=mitre.get("sub_technique_id") or mitre.get("technique_id", ""),
+                mitre_tactic=mitre.get("tactic", ""),
+                kill_chain_stage=kill_chain_stage_for("beacon"),
+                first_seen=first_seen,
+                last_seen=last_seen,
             )
         )
     return events
+
 
 
 def _beacon_severity(jitter: float) -> str:

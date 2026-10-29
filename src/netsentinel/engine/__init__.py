@@ -1,4 +1,18 @@
-"""Detection orchestration: run all detectors and produce a report."""
-from .detector import DetectionReport, detect
+"""Detection orchestration: run all detectors, correlate, produce a report."""
+from .correlator import (
+    AttackCampaign,
+    CorrelationReport,
+    correlate,
+    correlate_events,
+)
+from .detector import DetectionReport, compute_flow_stats, detect
 
-__all__ = ["DetectionReport", "detect"]
+__all__ = [
+    "AttackCampaign",
+    "CorrelationReport",
+    "DetectionReport",
+    "compute_flow_stats",
+    "correlate",
+    "correlate_events",
+    "detect",
+]

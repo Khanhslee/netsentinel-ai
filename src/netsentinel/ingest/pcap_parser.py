@@ -24,19 +24,38 @@ def read_packets(path) -> list:
 
 def parse_pcap(path) -> List[Flow]:
     """Parse a pcap/pcapng file and aggregate packets into flows."""
-    return aggregate_packets(read_packets(path))
+    # scapy.all registers link-layer decoders before PcapReader inspects DLT.
+    from scapy.all import PcapReader  # type: ignore
+
+    with PcapReader(str(path)) as packets:
+        return aggregate_packets(packets)
 
 
 def aggregate_packets(packets) -> List[Flow]:
-    """Aggregate raw packets (any scapy-compatible iterable) into flows."""
+    """Aggregate sessions, retaining each DNS observation and reply counters.
+
+    DNS observations remain separate so repeated queries on one socket are not
+    silently lost. Other reverse-direction packets update the originating flow.
+    """
     flows: Dict[tuple, Flow] = {}
     order: List[tuple] = []
 
-    for pkt in packets:
+    for index, pkt in enumerate(packets):
         flow = _packet_to_flow(pkt)
         if flow is None:
             continue
         key = flow.key
+        if flow.dns_qname:
+            key = (*key, "dns", index)
+        else:
+            reverse = (flow.dst_ip, flow.dst_port, flow.src_ip, flow.src_port, flow.proto)
+            if reverse in flows:
+                origin = flows[reverse]
+                origin.dst_bytes += flow.src_bytes
+                origin.dst_packets += flow.src_packets
+                origin.start_time = min(origin.start_time, flow.start_time)
+                origin.end_time = max(origin.end_time, flow.end_time)
+                continue
         if key in flows:
             flows[key].merge(flow)
         else:

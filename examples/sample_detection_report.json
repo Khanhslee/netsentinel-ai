@@ -1,0 +1,2678 @@
+{
+  "schema_version": "2.0",
+  "generated_at": "2026-10-29T18:40:20.010764+00:00",
+  "source_path": "data/demo.pcap",
+  "flows_count": 98,
+  "stats": {
+    "flows": 98,
+    "packets": 122,
+    "bytes_out": 1501919,
+    "bytes_in": 0,
+    "total_bytes": 1501919,
+    "unique_src_ips": 10,
+    "unique_dst_ips": 6,
+    "unique_hosts": 14,
+    "dns_flows": 45,
+    "capture_start": 1.0,
+    "capture_end": 640.0,
+    "capture_duration_sec": 639.0
+  },
+  "severity_counts": {
+    "critical": 1,
+    "high": 4,
+    "medium": 1
+  },
+  "llm_available": false,
+  "routing": {
+    "mode": "offline-deterministic",
+    "tier1_model": "muse-spark-1.3",
+    "tier2_model": "muse-wonder-1.0",
+    "base_url": "https://api.meta.ai/v1",
+    "total_calls": 0,
+    "api_calls": 0,
+    "offline_fallbacks": 0,
+    "fallback_reason": "Offline mode requested",
+    "avg_latency_ms": 0.0,
+    "triage": []
+  },
+  "correlation": {
+    "campaign_count": 5,
+    "max_risk_score": 90,
+    "campaigns": [
+      {
+        "campaign_id": "CP-HOST-0f4e3c14",
+        "scope": "host",
+        "correlation_basis": "Shared source IP and time proximity; causality requires analyst validation",
+        "name": "10.0.0.5: Command and Control",
+        "summary": "1 correlated events from 10.0.0.5 spanning 1 kill-chain stage(s): Command and Control.",
+        "severity": "critical",
+        "risk_score": 90,
+        "src_ips": [
+          "10.0.0.5"
+        ],
+        "victims": [
+          "203.0.113.10"
+        ],
+        "event_types": [
+          "beacon"
+        ],
+        "techniques": [
+          "T1071.001"
+        ],
+        "tactics": [
+          "Command and Control"
+        ],
+        "observed_stages": [
+          "Command and Control"
+        ],
+        "start_time": 100.0,
+        "end_time": 640.0,
+        "duration_sec": 540.0,
+        "kill_chain": [
+          {
+            "stage": "Reconnaissance",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Weaponization",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Delivery",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Exploitation",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Installation",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Command and Control",
+            "observed": true,
+            "event_count": 1,
+            "event_types": [
+              "beacon"
+            ],
+            "techniques": [
+              "T1071.001"
+            ],
+            "first_seen": 100.0,
+            "last_seen": 640.0
+          },
+          {
+            "stage": "Actions on Objectives",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          }
+        ],
+        "kill_chain_narrative": "Attack campaign CP-HOST-0f4e3c14 (host scope) observed 1 events across 1 kill-chain stage(s), risk score 90/100. Phase 1 - Command and Control: 10.0.0.5 beaconed to 203.0.113.10:8080 10 times with delta-t jitter 0.0% (MITRE T1071.001). Assessment: the traffic is consistent with a possible command-and-control channel. Validate endpoint process evidence before confirming compromise.",
+        "iocs": [
+          "203.0.113.10",
+          "203.0.113.10:8080"
+        ],
+        "recommended_actions": [
+          "Block the destination IP/domain and port at the perimeter firewall/proxy.",
+          "Isolate the source host and inspect for additional persistence or implants.",
+          "Hunt for outbound connections on the same cadence across the fleet.",
+          "Enable egress filtering and DNS/Domain fronting inspection.",
+          "Hunt the correlated IOCs across the fleet and validate containment before restoring the affected hosts."
+        ],
+        "event_ids": [
+          "5952c688a058"
+        ],
+        "timeline": [
+          {
+            "timestamp": 100.0,
+            "event_type": "beacon",
+            "severity": "critical",
+            "kill_chain_stage": "Command and Control",
+            "mitre_technique": "T1071.001",
+            "src_ip": "10.0.0.5",
+            "dst_ip": "203.0.113.10",
+            "description": "10.0.0.5 maintained 10 TCP connections to 203.0.113.10:8080 at a mean interval of 60.0s (jitter 0.000), consistent with C2 beaconing."
+          }
+        ]
+      },
+      {
+        "campaign_id": "CP-HOST-50d862fe",
+        "scope": "host",
+        "correlation_basis": "Shared source IP and time proximity; causality requires analyst validation",
+        "name": "10.0.0.6: Command and Control",
+        "summary": "2 correlated events from 10.0.0.6 spanning 1 kill-chain stage(s): Command and Control.",
+        "severity": "high",
+        "risk_score": 70,
+        "src_ips": [
+          "10.0.0.6"
+        ],
+        "victims": [],
+        "event_types": [
+          "dga",
+          "nxdomain_storm"
+        ],
+        "techniques": [
+          "T1568.002"
+        ],
+        "tactics": [
+          "Command and Control"
+        ],
+        "observed_stages": [
+          "Command and Control"
+        ],
+        "start_time": 300.0,
+        "end_time": 314.05,
+        "duration_sec": 14.05,
+        "kill_chain": [
+          {
+            "stage": "Reconnaissance",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Weaponization",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Delivery",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Exploitation",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Installation",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Command and Control",
+            "observed": true,
+            "event_count": 2,
+            "event_types": [
+              "dga",
+              "nxdomain_storm"
+            ],
+            "techniques": [
+              "T1568.002"
+            ],
+            "first_seen": 300.0,
+            "last_seen": 314.05
+          },
+          {
+            "stage": "Actions on Objectives",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          }
+        ],
+        "kill_chain_narrative": "Attack campaign CP-HOST-50d862fe (host scope) observed 2 events across 1 kill-chain stage(s), risk score 70/100. Phase 1 - Command and Control: 10.0.0.6 queried 14 algorithmic-looking domains averaging 3.687 bits/char entropy (MITRE T1568.002); 10.0.0.6 generated 15 NXDOMAIN responses across 15 domain families (MITRE T1568.002). Assessment: the traffic is consistent with a possible command-and-control channel. Validate endpoint process evidence before confirming compromise.",
+        "iocs": [
+          "amammhvambytjkdj.info",
+          "cjevwgfarzqu.org",
+          "gjrvqnvugbejwjcg.net",
+          "gnjjzmqlwfaqzji.net",
+          "hsmcaohzbnjuv.org",
+          "hxuxqrwqebvtad.com",
+          "jjfbdvnkamkox.info",
+          "oubdtmjfmxkpt.info",
+          "pgerimpiysseyyk.net",
+          "qtngthblmwkx.org",
+          "tkgnkuhmpxnhtqg.net",
+          "vmgarmtjuhusknrf.org",
+          "wwulweumpeldoxq.info",
+          "ykbvcpxfckgobo.net",
+          "pdxmppxmoesoo.info"
+        ],
+        "recommended_actions": [
+          "Sinkhole the affected domains via DNS and block via proxy category.",
+          "Deploy a DGA detection rule/model on the recursive resolver.",
+          "Identify and remediate the implant on the source host.",
+          "Monitor NXDOMAIN response volume for the same hosts.",
+          "Add the parent/sinkhole domain to the DNS blocklist.",
+          "Correlate NXDOMAIN volume with endpoint process telemetry.",
+          "Alert analysts on sustained NXDOMAIN storms from a single host.",
+          "Hunt the correlated IOCs across the fleet and validate containment before restoring the affected hosts."
+        ],
+        "event_ids": [
+          "165a7ec67b03",
+          "a2ce06db6784"
+        ],
+        "timeline": [
+          {
+            "timestamp": 300.0,
+            "event_type": "dga",
+            "severity": "high",
+            "kill_chain_stage": "Command and Control",
+            "mitre_technique": "T1568.002",
+            "src_ip": "10.0.0.6",
+            "dst_ip": null,
+            "description": "10.0.0.6 queried 14 high-entropy, algorithmically-looking domains (avg entropy 3.69), a DGA / C2 fallback indicator."
+          },
+          {
+            "timestamp": 300.05,
+            "event_type": "nxdomain_storm",
+            "severity": "high",
+            "kill_chain_stage": "Command and Control",
+            "mitre_technique": "T1568.002",
+            "src_ip": "10.0.0.6",
+            "dst_ip": null,
+            "description": "10.0.0.6 generated 15 failed (NXDOMAIN) lookups across 15 domain families, consistent with DGA probing."
+          }
+        ]
+      },
+      {
+        "campaign_id": "CP-HOST-10c17a8f",
+        "scope": "host",
+        "correlation_basis": "Shared source IP and time proximity; causality requires analyst validation",
+        "name": "10.0.0.7: Reconnaissance",
+        "summary": "1 correlated events from 10.0.0.7 spanning 1 kill-chain stage(s): Reconnaissance.",
+        "severity": "high",
+        "risk_score": 70,
+        "src_ips": [
+          "10.0.0.7"
+        ],
+        "victims": [
+          "10.0.0.50"
+        ],
+        "event_types": [
+          "port_scan"
+        ],
+        "techniques": [
+          "T1046"
+        ],
+        "tactics": [
+          "Discovery"
+        ],
+        "observed_stages": [
+          "Reconnaissance"
+        ],
+        "start_time": 200.0,
+        "end_time": 203.9,
+        "duration_sec": 3.9,
+        "kill_chain": [
+          {
+            "stage": "Reconnaissance",
+            "observed": true,
+            "event_count": 1,
+            "event_types": [
+              "port_scan"
+            ],
+            "techniques": [
+              "T1046"
+            ],
+            "first_seen": 200.0,
+            "last_seen": 203.9
+          },
+          {
+            "stage": "Weaponization",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Delivery",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Exploitation",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Installation",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Command and Control",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Actions on Objectives",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          }
+        ],
+        "kill_chain_narrative": "Attack campaign CP-HOST-10c17a8f (host scope) observed 1 events across 1 kill-chain stage(s), risk score 70/100. Phase 1 - Reconnaissance: 10.0.0.7 probed 40 ports on 10.0.0.50 at 10.26 ports/s (MITRE T1046). Assessment: activity is consistent with pre-compromise reconnaissance; harden exposed services and keep the source under watch.",
+        "iocs": [
+          "10.0.0.7",
+          "10.0.0.50"
+        ],
+        "recommended_actions": [
+          "Block/quarantine the scanning host.",
+          "Review exposed services on the targeted host for further attacks.",
+          "Tune IDS thresholds to alert on horizontal/vertical scans.",
+          "Hunt the correlated IOCs across the fleet and validate containment before restoring the affected hosts."
+        ],
+        "event_ids": [
+          "1e684ac2848c"
+        ],
+        "timeline": [
+          {
+            "timestamp": 200.0,
+            "event_type": "port_scan",
+            "severity": "high",
+            "kill_chain_stage": "Reconnaissance",
+            "mitre_technique": "T1046",
+            "src_ip": "10.0.0.7",
+            "dst_ip": "10.0.0.50",
+            "description": "10.0.0.7 probed 40 ports on 10.0.0.50 (SYN) within 3.9s, indicating network reconnaissance."
+          }
+        ]
+      },
+      {
+        "campaign_id": "CP-HOST-36f11810",
+        "scope": "host",
+        "correlation_basis": "Shared source IP and time proximity; causality requires analyst validation",
+        "name": "10.0.0.8: Command and Control",
+        "summary": "1 correlated events from 10.0.0.8 spanning 1 kill-chain stage(s): Command and Control.",
+        "severity": "high",
+        "risk_score": 70,
+        "src_ips": [
+          "10.0.0.8"
+        ],
+        "victims": [],
+        "event_types": [
+          "dns_tunneling"
+        ],
+        "techniques": [
+          "T1071.004"
+        ],
+        "tactics": [
+          "Command and Control"
+        ],
+        "observed_stages": [
+          "Command and Control"
+        ],
+        "start_time": 400.0,
+        "end_time": 411.0,
+        "duration_sec": 11.0,
+        "kill_chain": [
+          {
+            "stage": "Reconnaissance",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Weaponization",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Delivery",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Exploitation",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Installation",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Command and Control",
+            "observed": true,
+            "event_count": 1,
+            "event_types": [
+              "dns_tunneling"
+            ],
+            "techniques": [
+              "T1071.004"
+            ],
+            "first_seen": 400.0,
+            "last_seen": 411.0
+          },
+          {
+            "stage": "Actions on Objectives",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          }
+        ],
+        "kill_chain_narrative": "Attack campaign CP-HOST-36f11810 (host scope) observed 1 events across 1 kill-chain stage(s), risk score 70/100. Phase 1 - Command and Control: 10.0.0.8 sent possible tunnel traffic under 'tunnel.evil' with 12 queries, entropy 4.237 bits/char (MITRE T1071.004). Assessment: the traffic is consistent with a possible command-and-control channel. Validate endpoint process evidence before confirming compromise.",
+        "iocs": [
+          "tunnel.evil"
+        ],
+        "recommended_actions": [
+          "Enforce DNS filtering and rate-limit queries per host.",
+          "Block the tunnel domain and pivot to sinkholing.",
+          "Inspect originating process for DNS tunneling tooling.",
+          "Flag long query names / high TXT query volume via IDS.",
+          "Hunt the correlated IOCs across the fleet and validate containment before restoring the affected hosts."
+        ],
+        "event_ids": [
+          "abb0ed60aa74"
+        ],
+        "timeline": [
+          {
+            "timestamp": 400.0,
+            "event_type": "dns_tunneling",
+            "severity": "high",
+            "kill_chain_stage": "Command and Control",
+            "mitre_technique": "T1071.004",
+            "src_ip": "10.0.0.8",
+            "dst_ip": null,
+            "description": "10.0.0.8 sent 12 DNS queries under 'tunnel.evil' (max label 30 chars, TXT=True), a DNS tunneling indicator."
+          }
+        ]
+      },
+      {
+        "campaign_id": "CP-HOST-68775df7",
+        "scope": "host",
+        "correlation_basis": "Shared source IP and time proximity; causality requires analyst validation",
+        "name": "10.0.0.9: Actions on Objectives",
+        "summary": "1 correlated events from 10.0.0.9 spanning 1 kill-chain stage(s): Actions on Objectives.",
+        "severity": "medium",
+        "risk_score": 58,
+        "src_ips": [
+          "10.0.0.9"
+        ],
+        "victims": [
+          "198.51.100.5"
+        ],
+        "event_types": [
+          "exfiltration"
+        ],
+        "techniques": [
+          "T1041"
+        ],
+        "tactics": [
+          "Exfiltration"
+        ],
+        "observed_stages": [
+          "Actions on Objectives"
+        ],
+        "start_time": 500.0,
+        "end_time": 500.24,
+        "duration_sec": 0.24,
+        "kill_chain": [
+          {
+            "stage": "Reconnaissance",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Weaponization",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Delivery",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Exploitation",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Installation",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Command and Control",
+            "observed": false,
+            "event_count": 0,
+            "event_types": [],
+            "techniques": [],
+            "first_seen": 0.0,
+            "last_seen": 0.0
+          },
+          {
+            "stage": "Actions on Objectives",
+            "observed": true,
+            "event_count": 1,
+            "event_types": [
+              "exfiltration"
+            ],
+            "techniques": [
+              "T1041"
+            ],
+            "first_seen": 500.0,
+            "last_seen": 500.24
+          }
+        ],
+        "kill_chain_narrative": "Attack campaign CP-HOST-68775df7 (host scope) observed 1 events across 1 kill-chain stage(s), risk score 58/100. Phase 1 - Actions on Objectives: 10.0.0.9 uploaded 1,500,000 bytes to 198.51.100.5:443 with a 1500000.0:1 upload/download ratio (MITRE T1041). Assessment: the asymmetric transfer is a possible exfiltration signal. Validate the business purpose and endpoint telemetry, preserve evidence, and prioritize containment if unauthorized. No staging or data theft is proven.",
+        "iocs": [
+          "198.51.100.5",
+          "198.51.100.5:443"
+        ],
+        "recommended_actions": [
+          "IMMEDIATE: block the exfiltration destination and preserve the outbound transfer logs as evidence.",
+          "Block the destination immediately and inspect the host.",
+          "Verify whether the transfer matches a known business process.",
+          "Enable DLP and egress volume alerting.",
+          "Hunt the correlated IOCs across the fleet and validate containment before restoring the affected hosts."
+        ],
+        "event_ids": [
+          "41c8483929e7"
+        ],
+        "timeline": [
+          {
+            "timestamp": 500.0,
+            "event_type": "exfiltration",
+            "severity": "medium",
+            "kill_chain_stage": "Actions on Objectives",
+            "mitre_technique": "T1041",
+            "src_ip": "10.0.0.9",
+            "dst_ip": "198.51.100.5",
+            "description": "10.0.0.9 transferred 1,500,000 bytes to 198.51.100.5:443 while receiving only 0 bytes back (ratio 1500000:1), a potential data exfiltration channel."
+          }
+        ]
+      }
+    ],
+    "environment_overview": {
+      "campaign_id": "CP-ENV-eb5e4b33",
+      "scope": "environment",
+      "correlation_basis": "Capture overview only; common campaign attribution is unconfirmed",
+      "name": "Capture-wide temporal overview (unconfirmed relationship)",
+      "summary": "6 correlated events from 10.0.0.5, 10.0.0.7, 10.0.0.6 spanning 3 kill-chain stage(s): Reconnaissance -> Command and Control -> Actions on Objectives.",
+      "severity": "critical",
+      "risk_score": 100,
+      "src_ips": [
+        "10.0.0.5",
+        "10.0.0.7",
+        "10.0.0.6",
+        "10.0.0.8",
+        "10.0.0.9"
+      ],
+      "victims": [
+        "203.0.113.10",
+        "10.0.0.50",
+        "198.51.100.5"
+      ],
+      "event_types": [
+        "beacon",
+        "port_scan",
+        "dga",
+        "nxdomain_storm",
+        "dns_tunneling",
+        "exfiltration"
+      ],
+      "techniques": [
+        "T1071.001",
+        "T1046",
+        "T1568.002",
+        "T1071.004",
+        "T1041"
+      ],
+      "tactics": [
+        "Command and Control",
+        "Discovery",
+        "Exfiltration"
+      ],
+      "observed_stages": [
+        "Reconnaissance",
+        "Command and Control",
+        "Actions on Objectives"
+      ],
+      "start_time": 100.0,
+      "end_time": 640.0,
+      "duration_sec": 540.0,
+      "kill_chain": [
+        {
+          "stage": "Reconnaissance",
+          "observed": true,
+          "event_count": 1,
+          "event_types": [
+            "port_scan"
+          ],
+          "techniques": [
+            "T1046"
+          ],
+          "first_seen": 200.0,
+          "last_seen": 203.9
+        },
+        {
+          "stage": "Weaponization",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Delivery",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Exploitation",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Installation",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Command and Control",
+          "observed": true,
+          "event_count": 4,
+          "event_types": [
+            "beacon",
+            "dga",
+            "nxdomain_storm",
+            "dns_tunneling"
+          ],
+          "techniques": [
+            "T1071.001",
+            "T1568.002",
+            "T1071.004"
+          ],
+          "first_seen": 100.0,
+          "last_seen": 640.0
+        },
+        {
+          "stage": "Actions on Objectives",
+          "observed": true,
+          "event_count": 1,
+          "event_types": [
+            "exfiltration"
+          ],
+          "techniques": [
+            "T1041"
+          ],
+          "first_seen": 500.0,
+          "last_seen": 500.24
+        }
+      ],
+      "kill_chain_narrative": "Capture-wide temporal overview; the following hosts are not proven to belong to one campaign. Stage ordering is a framework view, not proof of chronological progression. Phase 1 - Reconnaissance: 10.0.0.7 probed 40 ports on 10.0.0.50 at 10.26 ports/s (MITRE T1046). Phase 2 - Command and Control: 10.0.0.5 beaconed to 203.0.113.10:8080 10 times with delta-t jitter 0.0% (MITRE T1071.001); 10.0.0.6 queried 14 algorithmic-looking domains averaging 3.687 bits/char entropy (MITRE T1568.002); 10.0.0.6 generated 15 NXDOMAIN responses across 15 domain families (MITRE T1568.002). Phase 3 - Actions on Objectives: 10.0.0.9 uploaded 1,500,000 bytes to 198.51.100.5:443 with a 1500000.0:1 upload/download ratio (MITRE T1041). Assessment: the asymmetric transfer is a possible exfiltration signal. Validate the business purpose and endpoint telemetry, preserve evidence, and prioritize containment if unauthorized. No staging or data theft is proven.",
+      "iocs": [
+        "203.0.113.10",
+        "203.0.113.10:8080",
+        "10.0.0.7",
+        "10.0.0.50",
+        "amammhvambytjkdj.info",
+        "cjevwgfarzqu.org",
+        "gjrvqnvugbejwjcg.net",
+        "gnjjzmqlwfaqzji.net",
+        "hsmcaohzbnjuv.org",
+        "hxuxqrwqebvtad.com",
+        "jjfbdvnkamkox.info",
+        "oubdtmjfmxkpt.info",
+        "pgerimpiysseyyk.net",
+        "qtngthblmwkx.org",
+        "tkgnkuhmpxnhtqg.net",
+        "vmgarmtjuhusknrf.org",
+        "wwulweumpeldoxq.info",
+        "ykbvcpxfckgobo.net",
+        "pdxmppxmoesoo.info",
+        "tunnel.evil",
+        "198.51.100.5",
+        "198.51.100.5:443"
+      ],
+      "recommended_actions": [
+        "IMMEDIATE: block the exfiltration destination and preserve the outbound transfer logs as evidence.",
+        "Block the destination IP/domain and port at the perimeter firewall/proxy.",
+        "Isolate the source host and inspect for additional persistence or implants.",
+        "Hunt for outbound connections on the same cadence across the fleet.",
+        "Enable egress filtering and DNS/Domain fronting inspection.",
+        "Block/quarantine the scanning host.",
+        "Review exposed services on the targeted host for further attacks.",
+        "Tune IDS thresholds to alert on horizontal/vertical scans.",
+        "Sinkhole the affected domains via DNS and block via proxy category.",
+        "Deploy a DGA detection rule/model on the recursive resolver.",
+        "Identify and remediate the implant on the source host.",
+        "Monitor NXDOMAIN response volume for the same hosts.",
+        "Add the parent/sinkhole domain to the DNS blocklist.",
+        "Correlate NXDOMAIN volume with endpoint process telemetry.",
+        "Alert analysts on sustained NXDOMAIN storms from a single host.",
+        "Enforce DNS filtering and rate-limit queries per host.",
+        "Block the tunnel domain and pivot to sinkholing.",
+        "Inspect originating process for DNS tunneling tooling.",
+        "Flag long query names / high TXT query volume via IDS.",
+        "Block the destination immediately and inspect the host.",
+        "Verify whether the transfer matches a known business process.",
+        "Enable DLP and egress volume alerting.",
+        "Hunt the correlated IOCs across the fleet and validate containment before restoring the affected hosts."
+      ],
+      "event_ids": [
+        "5952c688a058",
+        "1e684ac2848c",
+        "165a7ec67b03",
+        "a2ce06db6784",
+        "abb0ed60aa74",
+        "41c8483929e7"
+      ],
+      "timeline": [
+        {
+          "timestamp": 100.0,
+          "event_type": "beacon",
+          "severity": "critical",
+          "kill_chain_stage": "Command and Control",
+          "mitre_technique": "T1071.001",
+          "src_ip": "10.0.0.5",
+          "dst_ip": "203.0.113.10",
+          "description": "10.0.0.5 maintained 10 TCP connections to 203.0.113.10:8080 at a mean interval of 60.0s (jitter 0.000), consistent with C2 beaconing."
+        },
+        {
+          "timestamp": 200.0,
+          "event_type": "port_scan",
+          "severity": "high",
+          "kill_chain_stage": "Reconnaissance",
+          "mitre_technique": "T1046",
+          "src_ip": "10.0.0.7",
+          "dst_ip": "10.0.0.50",
+          "description": "10.0.0.7 probed 40 ports on 10.0.0.50 (SYN) within 3.9s, indicating network reconnaissance."
+        },
+        {
+          "timestamp": 300.0,
+          "event_type": "dga",
+          "severity": "high",
+          "kill_chain_stage": "Command and Control",
+          "mitre_technique": "T1568.002",
+          "src_ip": "10.0.0.6",
+          "dst_ip": null,
+          "description": "10.0.0.6 queried 14 high-entropy, algorithmically-looking domains (avg entropy 3.69), a DGA / C2 fallback indicator."
+        },
+        {
+          "timestamp": 300.05,
+          "event_type": "nxdomain_storm",
+          "severity": "high",
+          "kill_chain_stage": "Command and Control",
+          "mitre_technique": "T1568.002",
+          "src_ip": "10.0.0.6",
+          "dst_ip": null,
+          "description": "10.0.0.6 generated 15 failed (NXDOMAIN) lookups across 15 domain families, consistent with DGA probing."
+        },
+        {
+          "timestamp": 400.0,
+          "event_type": "dns_tunneling",
+          "severity": "high",
+          "kill_chain_stage": "Command and Control",
+          "mitre_technique": "T1071.004",
+          "src_ip": "10.0.0.8",
+          "dst_ip": null,
+          "description": "10.0.0.8 sent 12 DNS queries under 'tunnel.evil' (max label 30 chars, TXT=True), a DNS tunneling indicator."
+        },
+        {
+          "timestamp": 500.0,
+          "event_type": "exfiltration",
+          "severity": "medium",
+          "kill_chain_stage": "Actions on Objectives",
+          "mitre_technique": "T1041",
+          "src_ip": "10.0.0.9",
+          "dst_ip": "198.51.100.5",
+          "description": "10.0.0.9 transferred 1,500,000 bytes to 198.51.100.5:443 while receiving only 0 bytes back (ratio 1500000:1), a potential data exfiltration channel."
+        }
+      ]
+    },
+    "kill_chain_summary": [
+      {
+        "stage": "Reconnaissance",
+        "observed": true,
+        "event_count": 1,
+        "event_types": [
+          "port_scan"
+        ],
+        "techniques": [
+          "T1046"
+        ],
+        "first_seen": 200.0,
+        "last_seen": 203.9
+      },
+      {
+        "stage": "Weaponization",
+        "observed": false,
+        "event_count": 0,
+        "event_types": [],
+        "techniques": [],
+        "first_seen": 0.0,
+        "last_seen": 0.0
+      },
+      {
+        "stage": "Delivery",
+        "observed": false,
+        "event_count": 0,
+        "event_types": [],
+        "techniques": [],
+        "first_seen": 0.0,
+        "last_seen": 0.0
+      },
+      {
+        "stage": "Exploitation",
+        "observed": false,
+        "event_count": 0,
+        "event_types": [],
+        "techniques": [],
+        "first_seen": 0.0,
+        "last_seen": 0.0
+      },
+      {
+        "stage": "Installation",
+        "observed": false,
+        "event_count": 0,
+        "event_types": [],
+        "techniques": [],
+        "first_seen": 0.0,
+        "last_seen": 0.0
+      },
+      {
+        "stage": "Command and Control",
+        "observed": true,
+        "event_count": 4,
+        "event_types": [
+          "beacon",
+          "dga",
+          "nxdomain_storm",
+          "dns_tunneling"
+        ],
+        "techniques": [
+          "T1071.001",
+          "T1568.002",
+          "T1071.004"
+        ],
+        "first_seen": 100.0,
+        "last_seen": 640.0
+      },
+      {
+        "stage": "Actions on Objectives",
+        "observed": true,
+        "event_count": 1,
+        "event_types": [
+          "exfiltration"
+        ],
+        "techniques": [
+          "T1041"
+        ],
+        "first_seen": 500.0,
+        "last_seen": 500.24
+      }
+    ]
+  },
+  "campaigns": [
+    {
+      "campaign_id": "CP-HOST-0f4e3c14",
+      "scope": "host",
+      "correlation_basis": "Shared source IP and time proximity; causality requires analyst validation",
+      "name": "10.0.0.5: Command and Control",
+      "summary": "1 correlated events from 10.0.0.5 spanning 1 kill-chain stage(s): Command and Control.",
+      "severity": "critical",
+      "risk_score": 90,
+      "src_ips": [
+        "10.0.0.5"
+      ],
+      "victims": [
+        "203.0.113.10"
+      ],
+      "event_types": [
+        "beacon"
+      ],
+      "techniques": [
+        "T1071.001"
+      ],
+      "tactics": [
+        "Command and Control"
+      ],
+      "observed_stages": [
+        "Command and Control"
+      ],
+      "start_time": 100.0,
+      "end_time": 640.0,
+      "duration_sec": 540.0,
+      "kill_chain": [
+        {
+          "stage": "Reconnaissance",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Weaponization",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Delivery",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Exploitation",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Installation",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Command and Control",
+          "observed": true,
+          "event_count": 1,
+          "event_types": [
+            "beacon"
+          ],
+          "techniques": [
+            "T1071.001"
+          ],
+          "first_seen": 100.0,
+          "last_seen": 640.0
+        },
+        {
+          "stage": "Actions on Objectives",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        }
+      ],
+      "kill_chain_narrative": "Attack campaign CP-HOST-0f4e3c14 (host scope) observed 1 events across 1 kill-chain stage(s), risk score 90/100. Phase 1 - Command and Control: 10.0.0.5 beaconed to 203.0.113.10:8080 10 times with delta-t jitter 0.0% (MITRE T1071.001). Assessment: the traffic is consistent with a possible command-and-control channel. Validate endpoint process evidence before confirming compromise.",
+      "iocs": [
+        "203.0.113.10",
+        "203.0.113.10:8080"
+      ],
+      "recommended_actions": [
+        "Block the destination IP/domain and port at the perimeter firewall/proxy.",
+        "Isolate the source host and inspect for additional persistence or implants.",
+        "Hunt for outbound connections on the same cadence across the fleet.",
+        "Enable egress filtering and DNS/Domain fronting inspection.",
+        "Hunt the correlated IOCs across the fleet and validate containment before restoring the affected hosts."
+      ],
+      "event_ids": [
+        "5952c688a058"
+      ],
+      "timeline": [
+        {
+          "timestamp": 100.0,
+          "event_type": "beacon",
+          "severity": "critical",
+          "kill_chain_stage": "Command and Control",
+          "mitre_technique": "T1071.001",
+          "src_ip": "10.0.0.5",
+          "dst_ip": "203.0.113.10",
+          "description": "10.0.0.5 maintained 10 TCP connections to 203.0.113.10:8080 at a mean interval of 60.0s (jitter 0.000), consistent with C2 beaconing."
+        }
+      ]
+    },
+    {
+      "campaign_id": "CP-HOST-50d862fe",
+      "scope": "host",
+      "correlation_basis": "Shared source IP and time proximity; causality requires analyst validation",
+      "name": "10.0.0.6: Command and Control",
+      "summary": "2 correlated events from 10.0.0.6 spanning 1 kill-chain stage(s): Command and Control.",
+      "severity": "high",
+      "risk_score": 70,
+      "src_ips": [
+        "10.0.0.6"
+      ],
+      "victims": [],
+      "event_types": [
+        "dga",
+        "nxdomain_storm"
+      ],
+      "techniques": [
+        "T1568.002"
+      ],
+      "tactics": [
+        "Command and Control"
+      ],
+      "observed_stages": [
+        "Command and Control"
+      ],
+      "start_time": 300.0,
+      "end_time": 314.05,
+      "duration_sec": 14.05,
+      "kill_chain": [
+        {
+          "stage": "Reconnaissance",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Weaponization",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Delivery",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Exploitation",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Installation",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Command and Control",
+          "observed": true,
+          "event_count": 2,
+          "event_types": [
+            "dga",
+            "nxdomain_storm"
+          ],
+          "techniques": [
+            "T1568.002"
+          ],
+          "first_seen": 300.0,
+          "last_seen": 314.05
+        },
+        {
+          "stage": "Actions on Objectives",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        }
+      ],
+      "kill_chain_narrative": "Attack campaign CP-HOST-50d862fe (host scope) observed 2 events across 1 kill-chain stage(s), risk score 70/100. Phase 1 - Command and Control: 10.0.0.6 queried 14 algorithmic-looking domains averaging 3.687 bits/char entropy (MITRE T1568.002); 10.0.0.6 generated 15 NXDOMAIN responses across 15 domain families (MITRE T1568.002). Assessment: the traffic is consistent with a possible command-and-control channel. Validate endpoint process evidence before confirming compromise.",
+      "iocs": [
+        "amammhvambytjkdj.info",
+        "cjevwgfarzqu.org",
+        "gjrvqnvugbejwjcg.net",
+        "gnjjzmqlwfaqzji.net",
+        "hsmcaohzbnjuv.org",
+        "hxuxqrwqebvtad.com",
+        "jjfbdvnkamkox.info",
+        "oubdtmjfmxkpt.info",
+        "pgerimpiysseyyk.net",
+        "qtngthblmwkx.org",
+        "tkgnkuhmpxnhtqg.net",
+        "vmgarmtjuhusknrf.org",
+        "wwulweumpeldoxq.info",
+        "ykbvcpxfckgobo.net",
+        "pdxmppxmoesoo.info"
+      ],
+      "recommended_actions": [
+        "Sinkhole the affected domains via DNS and block via proxy category.",
+        "Deploy a DGA detection rule/model on the recursive resolver.",
+        "Identify and remediate the implant on the source host.",
+        "Monitor NXDOMAIN response volume for the same hosts.",
+        "Add the parent/sinkhole domain to the DNS blocklist.",
+        "Correlate NXDOMAIN volume with endpoint process telemetry.",
+        "Alert analysts on sustained NXDOMAIN storms from a single host.",
+        "Hunt the correlated IOCs across the fleet and validate containment before restoring the affected hosts."
+      ],
+      "event_ids": [
+        "165a7ec67b03",
+        "a2ce06db6784"
+      ],
+      "timeline": [
+        {
+          "timestamp": 300.0,
+          "event_type": "dga",
+          "severity": "high",
+          "kill_chain_stage": "Command and Control",
+          "mitre_technique": "T1568.002",
+          "src_ip": "10.0.0.6",
+          "dst_ip": null,
+          "description": "10.0.0.6 queried 14 high-entropy, algorithmically-looking domains (avg entropy 3.69), a DGA / C2 fallback indicator."
+        },
+        {
+          "timestamp": 300.05,
+          "event_type": "nxdomain_storm",
+          "severity": "high",
+          "kill_chain_stage": "Command and Control",
+          "mitre_technique": "T1568.002",
+          "src_ip": "10.0.0.6",
+          "dst_ip": null,
+          "description": "10.0.0.6 generated 15 failed (NXDOMAIN) lookups across 15 domain families, consistent with DGA probing."
+        }
+      ]
+    },
+    {
+      "campaign_id": "CP-HOST-10c17a8f",
+      "scope": "host",
+      "correlation_basis": "Shared source IP and time proximity; causality requires analyst validation",
+      "name": "10.0.0.7: Reconnaissance",
+      "summary": "1 correlated events from 10.0.0.7 spanning 1 kill-chain stage(s): Reconnaissance.",
+      "severity": "high",
+      "risk_score": 70,
+      "src_ips": [
+        "10.0.0.7"
+      ],
+      "victims": [
+        "10.0.0.50"
+      ],
+      "event_types": [
+        "port_scan"
+      ],
+      "techniques": [
+        "T1046"
+      ],
+      "tactics": [
+        "Discovery"
+      ],
+      "observed_stages": [
+        "Reconnaissance"
+      ],
+      "start_time": 200.0,
+      "end_time": 203.9,
+      "duration_sec": 3.9,
+      "kill_chain": [
+        {
+          "stage": "Reconnaissance",
+          "observed": true,
+          "event_count": 1,
+          "event_types": [
+            "port_scan"
+          ],
+          "techniques": [
+            "T1046"
+          ],
+          "first_seen": 200.0,
+          "last_seen": 203.9
+        },
+        {
+          "stage": "Weaponization",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Delivery",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Exploitation",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Installation",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Command and Control",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Actions on Objectives",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        }
+      ],
+      "kill_chain_narrative": "Attack campaign CP-HOST-10c17a8f (host scope) observed 1 events across 1 kill-chain stage(s), risk score 70/100. Phase 1 - Reconnaissance: 10.0.0.7 probed 40 ports on 10.0.0.50 at 10.26 ports/s (MITRE T1046). Assessment: activity is consistent with pre-compromise reconnaissance; harden exposed services and keep the source under watch.",
+      "iocs": [
+        "10.0.0.7",
+        "10.0.0.50"
+      ],
+      "recommended_actions": [
+        "Block/quarantine the scanning host.",
+        "Review exposed services on the targeted host for further attacks.",
+        "Tune IDS thresholds to alert on horizontal/vertical scans.",
+        "Hunt the correlated IOCs across the fleet and validate containment before restoring the affected hosts."
+      ],
+      "event_ids": [
+        "1e684ac2848c"
+      ],
+      "timeline": [
+        {
+          "timestamp": 200.0,
+          "event_type": "port_scan",
+          "severity": "high",
+          "kill_chain_stage": "Reconnaissance",
+          "mitre_technique": "T1046",
+          "src_ip": "10.0.0.7",
+          "dst_ip": "10.0.0.50",
+          "description": "10.0.0.7 probed 40 ports on 10.0.0.50 (SYN) within 3.9s, indicating network reconnaissance."
+        }
+      ]
+    },
+    {
+      "campaign_id": "CP-HOST-36f11810",
+      "scope": "host",
+      "correlation_basis": "Shared source IP and time proximity; causality requires analyst validation",
+      "name": "10.0.0.8: Command and Control",
+      "summary": "1 correlated events from 10.0.0.8 spanning 1 kill-chain stage(s): Command and Control.",
+      "severity": "high",
+      "risk_score": 70,
+      "src_ips": [
+        "10.0.0.8"
+      ],
+      "victims": [],
+      "event_types": [
+        "dns_tunneling"
+      ],
+      "techniques": [
+        "T1071.004"
+      ],
+      "tactics": [
+        "Command and Control"
+      ],
+      "observed_stages": [
+        "Command and Control"
+      ],
+      "start_time": 400.0,
+      "end_time": 411.0,
+      "duration_sec": 11.0,
+      "kill_chain": [
+        {
+          "stage": "Reconnaissance",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Weaponization",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Delivery",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Exploitation",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Installation",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Command and Control",
+          "observed": true,
+          "event_count": 1,
+          "event_types": [
+            "dns_tunneling"
+          ],
+          "techniques": [
+            "T1071.004"
+          ],
+          "first_seen": 400.0,
+          "last_seen": 411.0
+        },
+        {
+          "stage": "Actions on Objectives",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        }
+      ],
+      "kill_chain_narrative": "Attack campaign CP-HOST-36f11810 (host scope) observed 1 events across 1 kill-chain stage(s), risk score 70/100. Phase 1 - Command and Control: 10.0.0.8 sent possible tunnel traffic under 'tunnel.evil' with 12 queries, entropy 4.237 bits/char (MITRE T1071.004). Assessment: the traffic is consistent with a possible command-and-control channel. Validate endpoint process evidence before confirming compromise.",
+      "iocs": [
+        "tunnel.evil"
+      ],
+      "recommended_actions": [
+        "Enforce DNS filtering and rate-limit queries per host.",
+        "Block the tunnel domain and pivot to sinkholing.",
+        "Inspect originating process for DNS tunneling tooling.",
+        "Flag long query names / high TXT query volume via IDS.",
+        "Hunt the correlated IOCs across the fleet and validate containment before restoring the affected hosts."
+      ],
+      "event_ids": [
+        "abb0ed60aa74"
+      ],
+      "timeline": [
+        {
+          "timestamp": 400.0,
+          "event_type": "dns_tunneling",
+          "severity": "high",
+          "kill_chain_stage": "Command and Control",
+          "mitre_technique": "T1071.004",
+          "src_ip": "10.0.0.8",
+          "dst_ip": null,
+          "description": "10.0.0.8 sent 12 DNS queries under 'tunnel.evil' (max label 30 chars, TXT=True), a DNS tunneling indicator."
+        }
+      ]
+    },
+    {
+      "campaign_id": "CP-HOST-68775df7",
+      "scope": "host",
+      "correlation_basis": "Shared source IP and time proximity; causality requires analyst validation",
+      "name": "10.0.0.9: Actions on Objectives",
+      "summary": "1 correlated events from 10.0.0.9 spanning 1 kill-chain stage(s): Actions on Objectives.",
+      "severity": "medium",
+      "risk_score": 58,
+      "src_ips": [
+        "10.0.0.9"
+      ],
+      "victims": [
+        "198.51.100.5"
+      ],
+      "event_types": [
+        "exfiltration"
+      ],
+      "techniques": [
+        "T1041"
+      ],
+      "tactics": [
+        "Exfiltration"
+      ],
+      "observed_stages": [
+        "Actions on Objectives"
+      ],
+      "start_time": 500.0,
+      "end_time": 500.24,
+      "duration_sec": 0.24,
+      "kill_chain": [
+        {
+          "stage": "Reconnaissance",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Weaponization",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Delivery",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Exploitation",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Installation",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Command and Control",
+          "observed": false,
+          "event_count": 0,
+          "event_types": [],
+          "techniques": [],
+          "first_seen": 0.0,
+          "last_seen": 0.0
+        },
+        {
+          "stage": "Actions on Objectives",
+          "observed": true,
+          "event_count": 1,
+          "event_types": [
+            "exfiltration"
+          ],
+          "techniques": [
+            "T1041"
+          ],
+          "first_seen": 500.0,
+          "last_seen": 500.24
+        }
+      ],
+      "kill_chain_narrative": "Attack campaign CP-HOST-68775df7 (host scope) observed 1 events across 1 kill-chain stage(s), risk score 58/100. Phase 1 - Actions on Objectives: 10.0.0.9 uploaded 1,500,000 bytes to 198.51.100.5:443 with a 1500000.0:1 upload/download ratio (MITRE T1041). Assessment: the asymmetric transfer is a possible exfiltration signal. Validate the business purpose and endpoint telemetry, preserve evidence, and prioritize containment if unauthorized. No staging or data theft is proven.",
+      "iocs": [
+        "198.51.100.5",
+        "198.51.100.5:443"
+      ],
+      "recommended_actions": [
+        "IMMEDIATE: block the exfiltration destination and preserve the outbound transfer logs as evidence.",
+        "Block the destination immediately and inspect the host.",
+        "Verify whether the transfer matches a known business process.",
+        "Enable DLP and egress volume alerting.",
+        "Hunt the correlated IOCs across the fleet and validate containment before restoring the affected hosts."
+      ],
+      "event_ids": [
+        "41c8483929e7"
+      ],
+      "timeline": [
+        {
+          "timestamp": 500.0,
+          "event_type": "exfiltration",
+          "severity": "medium",
+          "kill_chain_stage": "Actions on Objectives",
+          "mitre_technique": "T1041",
+          "src_ip": "10.0.0.9",
+          "dst_ip": "198.51.100.5",
+          "description": "10.0.0.9 transferred 1,500,000 bytes to 198.51.100.5:443 while receiving only 0 bytes back (ratio 1500000:1), a potential data exfiltration channel."
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "event": {
+        "event_id": "5952c688a058",
+        "event_type": "beacon",
+        "severity": "critical",
+        "description": "10.0.0.5 maintained 10 TCP connections to 203.0.113.10:8080 at a mean interval of 60.0s (jitter 0.000), consistent with C2 beaconing.",
+        "src_ip": "10.0.0.5",
+        "dst_ip": "203.0.113.10",
+        "dst_port": 8080,
+        "iocs": [
+          "203.0.113.10",
+          "203.0.113.10:8080"
+        ],
+        "features": {
+          "proto": "tcp",
+          "connections": 10,
+          "mean_interval": 60.0,
+          "std_interval": 0.0,
+          "jitter_ratio": 0.0,
+          "coefficient_of_variation": 0.0,
+          "mean_delta_t_sec": 60.0,
+          "std_delta_t_sec": 0.0,
+          "median_delta_t_sec": 60.0,
+          "min_delta_t_sec": 60.0,
+          "max_delta_t_sec": 60.0,
+          "jitter_pct": 0.0,
+          "periodicity_score": 1.0,
+          "observation_window_sec": 540.0,
+          "first_seen": 100.0,
+          "last_seen": 640.0,
+          "destination": "203.0.113.10:8080"
+        },
+        "mitre_technique": "T1071.001",
+        "mitre_tactic": "Command and Control",
+        "kill_chain_stage": "Command and Control",
+        "first_seen": 100.0,
+        "last_seen": 640.0
+      },
+      "assessment": {
+        "threat_summary": "Host 10.0.0.5 established 10 sessions to 203.0.113.10:8080 with a mean inter-arrival of 60.0s and a coefficient of variation of 0.0 (0.0% jitter). Periodic timing is consistent with automated C2 polling, but may also reflect monitoring, software updates or scheduled business activity. Mapped to MITRE ATT&CK T1071.001 (Application Layer Protocol: Web Protocols) in the Command and Control tactic.",
+        "kill_chain_stage": "Command and Control",
+        "mitre_tactic": "Command and Control",
+        "mitre_technique_id": "T1071.001",
+        "technique_name": "Application Layer Protocol: Web Protocols",
+        "confidence_score": 0.97,
+        "iocs": [
+          "203.0.113.10",
+          "203.0.113.10:8080"
+        ],
+        "ioc_details": {
+          "ip_addresses": [
+            "203.0.113.10",
+            "10.0.0.5"
+          ],
+          "domains": [],
+          "hashes": [],
+          "ja3": [],
+          "user_agents": []
+        },
+        "root_cause_analysis": "Working root-cause hypothesis: timer-driven software produces periodic egress (coefficient of variation 0.0). A C2 implant is one possibility; legitimate health checks can produce the same cadence. Correlate endpoint process/socket telemetry and destination ownership before confirming compromise.",
+        "recommended_actions": [
+          "Block egress to 203.0.113.10:8080 and reset all live sessions from the host.",
+          "Block the destination IP/domain and port at the perimeter firewall/proxy.",
+          "Isolate the source host and inspect for additional persistence or implants.",
+          "Hunt for outbound connections on the same cadence across the fleet.",
+          "Enable egress filtering and DNS/Domain fronting inspection.",
+          "Preserve packet captures and flow records for the affected host as forensic evidence."
+        ],
+        "severity": "critical",
+        "natural_language_explanation": "The heuristic detector fired on BEACON behaviour and the deterministic expert engine scored the evidence at 0.97 confidence. The behaviour sits in the 'Command and Control' kill-chain phase and maps to T1071.001 (Application Layer Protocol: Web Protocols, Command and Control tactic). 10.0.0.5 maintained 10 TCP connections to 203.0.113.10:8080 at a mean interval of 60.0s (jitter 0.000), consistent with C2 beaconing. Treat the event as CRITICAL severity until the listed IOCs are triaged.",
+        "model": "offline-deterministic",
+        "requested_model": "",
+        "reasoning_source": "offline-deterministic",
+        "latency_ms": 0.0,
+        "threat_assessment": "Host 10.0.0.5 established 10 sessions to 203.0.113.10:8080 with a mean inter-arrival of 60.0s and a coefficient of variation of 0.0 (0.0% jitter). Periodic timing is consistent with automated C2 polling, but may also reflect monitoring, software updates or scheduled business activity. Mapped to MITRE ATT&CK T1071.001 (Application Layer Protocol: Web Protocols) in the Command and Control tactic.",
+        "mitre_technique": "T1071.001",
+        "tactic": "Command and Control",
+        "confidence": 0.97
+      },
+      "playbook": {
+        "event_id": "5952c688a058",
+        "title": "Mitigation playbook - Beacon",
+        "priority": "critical",
+        "affected_host": "10.0.0.5",
+        "destination": "203.0.113.10:8080",
+        "mitre_technique": "T1071.001",
+        "technique_name": "Application Layer Protocol: Web Protocols",
+        "tactic": "Command and Control",
+        "iocs": [
+          "203.0.113.10",
+          "203.0.113.10:8080"
+        ],
+        "steps": [
+          {
+            "order": 1,
+            "action": "Block egress to 203.0.113.10:8080 and reset all live sessions from the host."
+          },
+          {
+            "order": 2,
+            "action": "Block the destination IP/domain and port at the perimeter firewall/proxy."
+          },
+          {
+            "order": 3,
+            "action": "Isolate the source host and inspect for additional persistence or implants."
+          },
+          {
+            "order": 4,
+            "action": "Hunt for outbound connections on the same cadence across the fleet."
+          },
+          {
+            "order": 5,
+            "action": "Enable egress filtering and DNS/Domain fronting inspection."
+          },
+          {
+            "order": 6,
+            "action": "Preserve packet captures and flow records for the affected host as forensic evidence."
+          }
+        ]
+      }
+    },
+    {
+      "event": {
+        "event_id": "1e684ac2848c",
+        "event_type": "port_scan",
+        "severity": "high",
+        "description": "10.0.0.7 probed 40 ports on 10.0.0.50 (SYN) within 3.9s, indicating network reconnaissance.",
+        "src_ip": "10.0.0.7",
+        "dst_ip": "10.0.0.50",
+        "dst_port": null,
+        "iocs": [
+          "10.0.0.7",
+          "10.0.0.50"
+        ],
+        "features": {
+          "kind": "SYN",
+          "distinct_ports": 40,
+          "ports": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40
+          ],
+          "time_span": 3.9,
+          "packets_sent": 40,
+          "packets_per_second": 10.26,
+          "ports_per_second": 10.26,
+          "unique_src_ports": 40,
+          "port_range": {
+            "min": 1,
+            "max": 40
+          },
+          "well_known_ports_hit": 40,
+          "scan_window_limit_sec": 60.0,
+          "threshold_ports": 20,
+          "first_seen": 200.0,
+          "last_seen": 203.9
+        },
+        "mitre_technique": "T1046",
+        "mitre_tactic": "Discovery",
+        "kill_chain_stage": "Reconnaissance",
+        "first_seen": 200.0,
+        "last_seen": 203.9
+      },
+      "assessment": {
+        "threat_summary": "Host 10.0.0.7 probed 40 distinct ports on 10.0.0.50 within 3.9s (10.26 ports/s, 10.26 packets/s), hitting 40 well-known ports. This is consistent with active service discovery; validate approved vulnerability scans. Mapped to MITRE ATT&CK T1046 (Network Service Discovery) in the Discovery tactic.",
+        "kill_chain_stage": "Reconnaissance",
+        "mitre_tactic": "Discovery",
+        "mitre_technique_id": "T1046",
+        "technique_name": "Network Service Discovery",
+        "confidence_score": 0.8,
+        "iocs": [
+          "10.0.0.7",
+          "10.0.0.50"
+        ],
+        "ioc_details": {
+          "ip_addresses": [
+            "10.0.0.7",
+            "10.0.0.50"
+          ],
+          "domains": [],
+          "hashes": [],
+          "ja3": [],
+          "user_agents": []
+        },
+        "root_cause_analysis": "Working root-cause hypothesis: automated probing enumerates the target's TCP/UDP surface. The burst rate and port diversity exceed normal connection churn, which suggests scanning. The exact tool and authorization status require host and asset-inventory evidence; packet metadata does not identify nmap or masscan.",
+        "recommended_actions": [
+          "Rate-limit/deny further probes from 10.0.0.7 to 10.0.0.50 and validate which discovered services are reachable from that segment.",
+          "Block/quarantine the scanning host.",
+          "Review exposed services on the targeted host for further attacks.",
+          "Tune IDS thresholds to alert on horizontal/vertical scans.",
+          "Preserve packet captures and flow records for the affected host as forensic evidence."
+        ],
+        "severity": "high",
+        "natural_language_explanation": "The heuristic detector fired on PORT_SCAN behaviour and the deterministic expert engine scored the evidence at 0.80 confidence. The behaviour sits in the 'Reconnaissance' kill-chain phase and maps to T1046 (Network Service Discovery, Discovery tactic). 10.0.0.7 probed 40 ports on 10.0.0.50 (SYN) within 3.9s, indicating network reconnaissance. Treat the event as HIGH severity until the listed IOCs are triaged.",
+        "model": "offline-deterministic",
+        "requested_model": "",
+        "reasoning_source": "offline-deterministic",
+        "latency_ms": 0.0,
+        "threat_assessment": "Host 10.0.0.7 probed 40 distinct ports on 10.0.0.50 within 3.9s (10.26 ports/s, 10.26 packets/s), hitting 40 well-known ports. This is consistent with active service discovery; validate approved vulnerability scans. Mapped to MITRE ATT&CK T1046 (Network Service Discovery) in the Discovery tactic.",
+        "mitre_technique": "T1046",
+        "tactic": "Discovery",
+        "confidence": 0.8
+      },
+      "playbook": {
+        "event_id": "1e684ac2848c",
+        "title": "Mitigation playbook - Port Scan",
+        "priority": "high",
+        "affected_host": "10.0.0.7",
+        "destination": "10.0.0.50:None",
+        "mitre_technique": "T1046",
+        "technique_name": "Network Service Discovery",
+        "tactic": "Discovery",
+        "iocs": [
+          "10.0.0.7",
+          "10.0.0.50"
+        ],
+        "steps": [
+          {
+            "order": 1,
+            "action": "Rate-limit/deny further probes from 10.0.0.7 to 10.0.0.50 and validate which discovered services are reachable from that segment."
+          },
+          {
+            "order": 2,
+            "action": "Block/quarantine the scanning host."
+          },
+          {
+            "order": 3,
+            "action": "Review exposed services on the targeted host for further attacks."
+          },
+          {
+            "order": 4,
+            "action": "Tune IDS thresholds to alert on horizontal/vertical scans."
+          },
+          {
+            "order": 5,
+            "action": "Preserve packet captures and flow records for the affected host as forensic evidence."
+          }
+        ]
+      }
+    },
+    {
+      "event": {
+        "event_id": "a2ce06db6784",
+        "event_type": "nxdomain_storm",
+        "severity": "high",
+        "description": "10.0.0.6 generated 15 failed (NXDOMAIN) lookups across 15 domain families, consistent with DGA probing.",
+        "src_ip": "10.0.0.6",
+        "dst_ip": null,
+        "dst_port": null,
+        "iocs": [
+          "tkgnkuhmpxnhtqg.net",
+          "amammhvambytjkdj.info",
+          "cjevwgfarzqu.org",
+          "gjrvqnvugbejwjcg.net",
+          "gnjjzmqlwfaqzji.net",
+          "hsmcaohzbnjuv.org",
+          "hxuxqrwqebvtad.com",
+          "jjfbdvnkamkox.info",
+          "oubdtmjfmxkpt.info",
+          "pdxmppxmoesoo.info",
+          "pgerimpiysseyyk.net",
+          "qtngthblmwkx.org",
+          "vmgarmtjuhusknrf.org",
+          "wwulweumpeldoxq.info",
+          "ykbvcpxfckgobo.net"
+        ],
+        "features": {
+          "nxdomain_count": 15,
+          "families": 15,
+          "top_family": "tkgnkuhmpxnhtqg.net",
+          "sample_names": [
+            "amammhvambytjkdj.info",
+            "cjevwgfarzqu.org",
+            "gjrvqnvugbejwjcg.net",
+            "gnjjzmqlwfaqzji.net",
+            "hsmcaohzbnjuv.org",
+            "hxuxqrwqebvtad.com",
+            "jjfbdvnkamkox.info",
+            "oubdtmjfmxkpt.info",
+            "pdxmppxmoesoo.info",
+            "pgerimpiysseyyk.net",
+            "qtngthblmwkx.org",
+            "tkgnkuhmpxnhtqg.net",
+            "vmgarmtjuhusknrf.org",
+            "wwulweumpeldoxq.info",
+            "ykbvcpxfckgobo.net"
+          ],
+          "shannon_entropy": 3.657,
+          "avg_entropy": 3.657,
+          "max_entropy": 3.948,
+          "entropy_profile": {
+            "count": 15,
+            "min": 3.239,
+            "max": 3.948,
+            "avg": 3.657
+          },
+          "nxdomain_ratio": 1.0,
+          "nxdomain_per_second": 1.07,
+          "family_breakdown": [
+            {
+              "family": "tkgnkuhmpxnhtqg.net",
+              "nxdomain_count": 1
+            },
+            {
+              "family": "oubdtmjfmxkpt.info",
+              "nxdomain_count": 1
+            },
+            {
+              "family": "cjevwgfarzqu.org",
+              "nxdomain_count": 1
+            },
+            {
+              "family": "pdxmppxmoesoo.info",
+              "nxdomain_count": 1
+            },
+            {
+              "family": "hsmcaohzbnjuv.org",
+              "nxdomain_count": 1
+            },
+            {
+              "family": "gjrvqnvugbejwjcg.net",
+              "nxdomain_count": 1
+            },
+            {
+              "family": "vmgarmtjuhusknrf.org",
+              "nxdomain_count": 1
+            },
+            {
+              "family": "ykbvcpxfckgobo.net",
+              "nxdomain_count": 1
+            },
+            {
+              "family": "jjfbdvnkamkox.info",
+              "nxdomain_count": 1
+            },
+            {
+              "family": "pgerimpiysseyyk.net",
+              "nxdomain_count": 1
+            }
+          ],
+          "threshold": 10,
+          "first_seen": 300.05,
+          "last_seen": 314.05
+        },
+        "mitre_technique": "T1568.002",
+        "mitre_tactic": "Command and Control",
+        "kill_chain_stage": "Command and Control",
+        "first_seen": 300.05,
+        "last_seen": 314.05
+      },
+      "assessment": {
+        "threat_summary": "Host 10.0.0.6 produced 15 distinct NXDOMAIN responses across 15 domain families (top family 'tkgnkuhmpxnhtqg.net', mean entropy 3.657). Bursts of failed resolutions are one of candidate DGA / domain-fuzzing signals; resolver misconfiguration and unavailable services are alternative causes. Mapped to MITRE ATT&CK T1568.002 (Dynamic Resolution: Domain Generation Algorithms) in the Command and Control tactic.",
+        "kill_chain_stage": "Command and Control",
+        "mitre_tactic": "Command and Control",
+        "mitre_technique_id": "T1568.002",
+        "technique_name": "Dynamic Resolution: Domain Generation Algorithms",
+        "confidence_score": 0.75,
+        "iocs": [
+          "tkgnkuhmpxnhtqg.net",
+          "amammhvambytjkdj.info",
+          "cjevwgfarzqu.org",
+          "gjrvqnvugbejwjcg.net",
+          "gnjjzmqlwfaqzji.net",
+          "hsmcaohzbnjuv.org",
+          "hxuxqrwqebvtad.com",
+          "jjfbdvnkamkox.info",
+          "oubdtmjfmxkpt.info",
+          "pdxmppxmoesoo.info",
+          "pgerimpiysseyyk.net",
+          "qtngthblmwkx.org",
+          "vmgarmtjuhusknrf.org",
+          "wwulweumpeldoxq.info",
+          "ykbvcpxfckgobo.net"
+        ],
+        "ioc_details": {
+          "ip_addresses": [
+            "10.0.0.6"
+          ],
+          "domains": [
+            "tkgnkuhmpxnhtqg.net",
+            "amammhvambytjkdj.info",
+            "cjevwgfarzqu.org",
+            "gjrvqnvugbejwjcg.net",
+            "gnjjzmqlwfaqzji.net",
+            "hsmcaohzbnjuv.org",
+            "hxuxqrwqebvtad.com",
+            "jjfbdvnkamkox.info",
+            "oubdtmjfmxkpt.info",
+            "pdxmppxmoesoo.info",
+            "pgerimpiysseyyk.net",
+            "qtngthblmwkx.org",
+            "vmgarmtjuhusknrf.org",
+            "wwulweumpeldoxq.info",
+            "ykbvcpxfckgobo.net"
+          ],
+          "hashes": [],
+          "ja3": [],
+          "user_agents": []
+        },
+        "root_cause_analysis": "Working root-cause hypothesis: repeated failed resolutions may represent DGA rendezvous attempts or domain fuzzing. Stale configuration and resolver failures are plausible alternatives. Confirm via query chronology, resolver health and the originating process; no malware identity is established.",
+        "recommended_actions": [
+          "Review 'tkgnkuhmpxnhtqg.net' for a scoped DNS sinkhole/blocklist entry after validation.",
+          "Add the parent/sinkhole domain to the DNS blocklist.",
+          "Correlate NXDOMAIN volume with endpoint process telemetry.",
+          "Alert analysts on sustained NXDOMAIN storms from a single host.",
+          "Preserve packet captures and flow records for the affected host as forensic evidence."
+        ],
+        "severity": "high",
+        "natural_language_explanation": "The heuristic detector fired on NXDOMAIN_STORM behaviour and the deterministic expert engine scored the evidence at 0.75 confidence. The behaviour sits in the 'Command and Control' kill-chain phase and maps to T1568.002 (Dynamic Resolution: Domain Generation Algorithms, Command and Control tactic). 10.0.0.6 generated 15 failed (NXDOMAIN) lookups across 15 domain families, consistent with DGA probing. Treat the event as HIGH severity until the listed IOCs are triaged.",
+        "model": "offline-deterministic",
+        "requested_model": "",
+        "reasoning_source": "offline-deterministic",
+        "latency_ms": 0.0,
+        "threat_assessment": "Host 10.0.0.6 produced 15 distinct NXDOMAIN responses across 15 domain families (top family 'tkgnkuhmpxnhtqg.net', mean entropy 3.657). Bursts of failed resolutions are one of candidate DGA / domain-fuzzing signals; resolver misconfiguration and unavailable services are alternative causes. Mapped to MITRE ATT&CK T1568.002 (Dynamic Resolution: Domain Generation Algorithms) in the Command and Control tactic.",
+        "mitre_technique": "T1568.002",
+        "tactic": "Command and Control",
+        "confidence": 0.75
+      },
+      "playbook": {
+        "event_id": "a2ce06db6784",
+        "title": "Mitigation playbook - Nxdomain Storm",
+        "priority": "high",
+        "affected_host": "10.0.0.6",
+        "destination": null,
+        "mitre_technique": "T1568.002",
+        "technique_name": "Dynamic Resolution: Domain Generation Algorithms",
+        "tactic": "Command and Control",
+        "iocs": [
+          "tkgnkuhmpxnhtqg.net",
+          "amammhvambytjkdj.info",
+          "cjevwgfarzqu.org",
+          "gjrvqnvugbejwjcg.net",
+          "gnjjzmqlwfaqzji.net",
+          "hsmcaohzbnjuv.org",
+          "hxuxqrwqebvtad.com",
+          "jjfbdvnkamkox.info",
+          "oubdtmjfmxkpt.info",
+          "pdxmppxmoesoo.info",
+          "pgerimpiysseyyk.net",
+          "qtngthblmwkx.org",
+          "vmgarmtjuhusknrf.org",
+          "wwulweumpeldoxq.info",
+          "ykbvcpxfckgobo.net"
+        ],
+        "steps": [
+          {
+            "order": 1,
+            "action": "Review 'tkgnkuhmpxnhtqg.net' for a scoped DNS sinkhole/blocklist entry after validation."
+          },
+          {
+            "order": 2,
+            "action": "Add the parent/sinkhole domain to the DNS blocklist."
+          },
+          {
+            "order": 3,
+            "action": "Correlate NXDOMAIN volume with endpoint process telemetry."
+          },
+          {
+            "order": 4,
+            "action": "Alert analysts on sustained NXDOMAIN storms from a single host."
+          },
+          {
+            "order": 5,
+            "action": "Preserve packet captures and flow records for the affected host as forensic evidence."
+          }
+        ]
+      }
+    },
+    {
+      "event": {
+        "event_id": "abb0ed60aa74",
+        "event_type": "dns_tunneling",
+        "severity": "high",
+        "description": "10.0.0.8 sent 12 DNS queries under 'tunnel.evil' (max label 30 chars, TXT=True), a DNS tunneling indicator.",
+        "src_ip": "10.0.0.8",
+        "dst_ip": null,
+        "dst_port": null,
+        "iocs": [
+          "tunnel.evil"
+        ],
+        "features": {
+          "base_domain": "tunnel.evil",
+          "query_count": 12,
+          "distinct_names": 12,
+          "max_label_len": 30,
+          "txt_queries": true,
+          "shannon_entropy": 4.237,
+          "avg_entropy": 4.237,
+          "max_entropy": 4.507,
+          "entropy_threshold": 3.4,
+          "avg_label_len": 30.0,
+          "label_len_threshold": 20,
+          "query_rate_per_sec": 1.09,
+          "unique_name_ratio": 1.0,
+          "txt_ratio": 1.0,
+          "query_payload_bytes": 720,
+          "encoded_label_characters": 360,
+          "bytes_per_query": 60.0,
+          "sample_queries": [
+            "0y9dom5igqpki7p5tb94874frhocn9.tunnel.evil",
+            "1t2tala753lc58drc11ertj5pht0hl.tunnel.evil",
+            "30t9nt3w5uzbikcidkwnnhj7xvg0fn.tunnel.evil",
+            "3j2d54i3qk2iagl58kxo9t7e8g8jdp.tunnel.evil",
+            "3kx7eedtjvzhwjr64dpja1wj0tpac5.tunnel.evil"
+          ],
+          "first_seen": 400.0,
+          "last_seen": 411.0
+        },
+        "mitre_technique": "T1071.004",
+        "mitre_tactic": "Command and Control",
+        "kill_chain_stage": "Command and Control",
+        "first_seen": 400.0,
+        "last_seen": 411.0
+      },
+      "assessment": {
+        "threat_summary": "Host 10.0.0.8 sent 12 queries under 'tunnel.evil' with a longest label of 30 chars (threshold 20), subdomain entropy 4.237 bits/char and a unique-name ratio of 1.0. The pattern is consistent with data encoded into DNS labels (TXT=True). Mapped to MITRE ATT&CK T1071.004 (Application Layer Protocol: DNS) in the Command and Control tactic.",
+        "kill_chain_stage": "Command and Control",
+        "mitre_tactic": "Command and Control",
+        "mitre_technique_id": "T1071.004",
+        "technique_name": "Application Layer Protocol: DNS",
+        "confidence_score": 0.95,
+        "iocs": [
+          "tunnel.evil"
+        ],
+        "ioc_details": {
+          "ip_addresses": [
+            "10.0.0.8"
+          ],
+          "domains": [
+            "tunnel.evil"
+          ],
+          "hashes": [],
+          "ja3": [],
+          "user_agents": []
+        },
+        "root_cause_analysis": "Working root-cause hypothesis: long or TXT-heavy DNS labels may encode a tunnel. High entropy and uniqueness support this hypothesis when observed, but telemetry and legitimate security products can look similar. Inspect decoded query contents, authoritative-server ownership and process telemetry before asserting data theft or attacker control.",
+        "recommended_actions": [
+          "Review 'tunnel.evil' for a scoped DNS sinkhole/blocklist entry after validation.",
+          "Enforce DNS filtering and rate-limit queries per host.",
+          "Block the tunnel domain and pivot to sinkholing.",
+          "Inspect originating process for DNS tunneling tooling.",
+          "Flag long query names / high TXT query volume via IDS.",
+          "Preserve packet captures and flow records for the affected host as forensic evidence."
+        ],
+        "severity": "high",
+        "natural_language_explanation": "The heuristic detector fired on DNS_TUNNELING behaviour and the deterministic expert engine scored the evidence at 0.95 confidence. The behaviour sits in the 'Command and Control' kill-chain phase and maps to T1071.004 (Application Layer Protocol: DNS, Command and Control tactic). 10.0.0.8 sent 12 DNS queries under 'tunnel.evil' (max label 30 chars, TXT=True), a DNS tunneling indicator. Treat the event as HIGH severity until the listed IOCs are triaged.",
+        "model": "offline-deterministic",
+        "requested_model": "",
+        "reasoning_source": "offline-deterministic",
+        "latency_ms": 0.0,
+        "threat_assessment": "Host 10.0.0.8 sent 12 queries under 'tunnel.evil' with a longest label of 30 chars (threshold 20), subdomain entropy 4.237 bits/char and a unique-name ratio of 1.0. The pattern is consistent with data encoded into DNS labels (TXT=True). Mapped to MITRE ATT&CK T1071.004 (Application Layer Protocol: DNS) in the Command and Control tactic.",
+        "mitre_technique": "T1071.004",
+        "tactic": "Command and Control",
+        "confidence": 0.95
+      },
+      "playbook": {
+        "event_id": "abb0ed60aa74",
+        "title": "Mitigation playbook - Dns Tunneling",
+        "priority": "high",
+        "affected_host": "10.0.0.8",
+        "destination": null,
+        "mitre_technique": "T1071.004",
+        "technique_name": "Application Layer Protocol: DNS",
+        "tactic": "Command and Control",
+        "iocs": [
+          "tunnel.evil"
+        ],
+        "steps": [
+          {
+            "order": 1,
+            "action": "Review 'tunnel.evil' for a scoped DNS sinkhole/blocklist entry after validation."
+          },
+          {
+            "order": 2,
+            "action": "Enforce DNS filtering and rate-limit queries per host."
+          },
+          {
+            "order": 3,
+            "action": "Block the tunnel domain and pivot to sinkholing."
+          },
+          {
+            "order": 4,
+            "action": "Inspect originating process for DNS tunneling tooling."
+          },
+          {
+            "order": 5,
+            "action": "Flag long query names / high TXT query volume via IDS."
+          },
+          {
+            "order": 6,
+            "action": "Preserve packet captures and flow records for the affected host as forensic evidence."
+          }
+        ]
+      }
+    },
+    {
+      "event": {
+        "event_id": "165a7ec67b03",
+        "event_type": "dga",
+        "severity": "high",
+        "description": "10.0.0.6 queried 14 high-entropy, algorithmically-looking domains (avg entropy 3.69), a DGA / C2 fallback indicator.",
+        "src_ip": "10.0.0.6",
+        "dst_ip": null,
+        "dst_port": null,
+        "iocs": [
+          "amammhvambytjkdj.info",
+          "cjevwgfarzqu.org",
+          "gjrvqnvugbejwjcg.net",
+          "gnjjzmqlwfaqzji.net",
+          "hsmcaohzbnjuv.org",
+          "hxuxqrwqebvtad.com",
+          "jjfbdvnkamkox.info",
+          "oubdtmjfmxkpt.info",
+          "pgerimpiysseyyk.net",
+          "qtngthblmwkx.org",
+          "tkgnkuhmpxnhtqg.net",
+          "vmgarmtjuhusknrf.org",
+          "wwulweumpeldoxq.info",
+          "ykbvcpxfckgobo.net"
+        ],
+        "features": {
+          "domains": [
+            "amammhvambytjkdj.info",
+            "cjevwgfarzqu.org",
+            "gjrvqnvugbejwjcg.net",
+            "gnjjzmqlwfaqzji.net",
+            "hsmcaohzbnjuv.org",
+            "hxuxqrwqebvtad.com",
+            "jjfbdvnkamkox.info",
+            "oubdtmjfmxkpt.info",
+            "pgerimpiysseyyk.net",
+            "qtngthblmwkx.org",
+            "tkgnkuhmpxnhtqg.net",
+            "vmgarmtjuhusknrf.org",
+            "wwulweumpeldoxq.info",
+            "ykbvcpxfckgobo.net"
+          ],
+          "count": 14,
+          "avg_entropy": 3.687,
+          "shannon_entropy": 3.687,
+          "max_entropy": 3.948,
+          "min_entropy": 3.432,
+          "entropy_threshold": 3.4,
+          "entropy_profile": {
+            "count": 14,
+            "min": 3.432,
+            "max": 3.948,
+            "avg": 3.687
+          },
+          "avg_domain_length": 18.5,
+          "max_label_len": 16,
+          "avg_label_len": 14.21,
+          "queries_per_second": 1.0,
+          "domain_entropy": [
+            {
+              "domain": "tkgnkuhmpxnhtqg.net",
+              "entropy": 3.432
+            },
+            {
+              "domain": "oubdtmjfmxkpt.info",
+              "entropy": 3.725
+            },
+            {
+              "domain": "cjevwgfarzqu.org",
+              "entropy": 3.75
+            },
+            {
+              "domain": "hsmcaohzbnjuv.org",
+              "entropy": 3.852
+            },
+            {
+              "domain": "gjrvqnvugbejwjcg.net",
+              "entropy": 3.546
+            },
+            {
+              "domain": "vmgarmtjuhusknrf.org",
+              "entropy": 3.784
+            },
+            {
+              "domain": "ykbvcpxfckgobo.net",
+              "entropy": 3.725
+            },
+            {
+              "domain": "jjfbdvnkamkox.info",
+              "entropy": 3.614
+            },
+            {
+              "domain": "pgerimpiysseyyk.net",
+              "entropy": 3.432
+            },
+            {
+              "domain": "amammhvambytjkdj.info",
+              "entropy": 3.69
+            }
+          ],
+          "first_seen": 300.0,
+          "last_seen": 314.05
+        },
+        "mitre_technique": "T1568.002",
+        "mitre_tactic": "Command and Control",
+        "kill_chain_stage": "Command and Control",
+        "first_seen": 300.0,
+        "last_seen": 314.05
+      },
+      "assessment": {
+        "threat_summary": "Host 10.0.0.6 queried 14 high-entropy domains (mean Shannon entropy 3.687 bits/char, max 3.948, threshold 3.4). DGA-based fallback domains let malware re-establish C2 even when individual domains are taken down. Mapped to MITRE ATT&CK T1568.002 (Dynamic Resolution: Domain Generation Algorithms) in the Command and Control tactic.",
+        "kill_chain_stage": "Command and Control",
+        "mitre_tactic": "Command and Control",
+        "mitre_technique_id": "T1568.002",
+        "technique_name": "Dynamic Resolution: Domain Generation Algorithms",
+        "confidence_score": 0.78,
+        "iocs": [
+          "amammhvambytjkdj.info",
+          "cjevwgfarzqu.org",
+          "gjrvqnvugbejwjcg.net",
+          "gnjjzmqlwfaqzji.net",
+          "hsmcaohzbnjuv.org",
+          "hxuxqrwqebvtad.com",
+          "jjfbdvnkamkox.info",
+          "oubdtmjfmxkpt.info",
+          "pgerimpiysseyyk.net",
+          "qtngthblmwkx.org",
+          "tkgnkuhmpxnhtqg.net",
+          "vmgarmtjuhusknrf.org",
+          "wwulweumpeldoxq.info",
+          "ykbvcpxfckgobo.net"
+        ],
+        "ioc_details": {
+          "ip_addresses": [
+            "10.0.0.6"
+          ],
+          "domains": [
+            "amammhvambytjkdj.info",
+            "cjevwgfarzqu.org",
+            "gjrvqnvugbejwjcg.net",
+            "gnjjzmqlwfaqzji.net",
+            "hsmcaohzbnjuv.org",
+            "hxuxqrwqebvtad.com",
+            "jjfbdvnkamkox.info",
+            "oubdtmjfmxkpt.info",
+            "pgerimpiysseyyk.net",
+            "qtngthblmwkx.org",
+            "tkgnkuhmpxnhtqg.net",
+            "vmgarmtjuhusknrf.org",
+            "wwulweumpeldoxq.info",
+            "ykbvcpxfckgobo.net"
+          ],
+          "hashes": [],
+          "ja3": [],
+          "user_agents": []
+        },
+        "root_cause_analysis": "Working root-cause hypothesis: generated domain names may provide C2 rendezvous points. Observed entropy exceeds the 3.4 bits/char threshold. Entropy alone does not prove a DGA or failed resolution; compare DNS response codes, domain reputation and endpoint process lineage, including legitimate CDN names.",
+        "recommended_actions": [
+          "Sinkhole the affected domains via DNS and block via proxy category.",
+          "Deploy a DGA detection rule/model on the recursive resolver.",
+          "Identify and remediate the implant on the source host.",
+          "Monitor NXDOMAIN response volume for the same hosts.",
+          "Preserve packet captures and flow records for the affected host as forensic evidence."
+        ],
+        "severity": "high",
+        "natural_language_explanation": "The heuristic detector fired on DGA behaviour and the deterministic expert engine scored the evidence at 0.78 confidence. The behaviour sits in the 'Command and Control' kill-chain phase and maps to T1568.002 (Dynamic Resolution: Domain Generation Algorithms, Command and Control tactic). 10.0.0.6 queried 14 high-entropy, algorithmically-looking domains (avg entropy 3.69), a DGA / C2 fallback indicator. Treat the event as HIGH severity until the listed IOCs are triaged.",
+        "model": "offline-deterministic",
+        "requested_model": "",
+        "reasoning_source": "offline-deterministic",
+        "latency_ms": 0.0,
+        "threat_assessment": "Host 10.0.0.6 queried 14 high-entropy domains (mean Shannon entropy 3.687 bits/char, max 3.948, threshold 3.4). DGA-based fallback domains let malware re-establish C2 even when individual domains are taken down. Mapped to MITRE ATT&CK T1568.002 (Dynamic Resolution: Domain Generation Algorithms) in the Command and Control tactic.",
+        "mitre_technique": "T1568.002",
+        "tactic": "Command and Control",
+        "confidence": 0.78
+      },
+      "playbook": {
+        "event_id": "165a7ec67b03",
+        "title": "Mitigation playbook - Dga",
+        "priority": "high",
+        "affected_host": "10.0.0.6",
+        "destination": null,
+        "mitre_technique": "T1568.002",
+        "technique_name": "Dynamic Resolution: Domain Generation Algorithms",
+        "tactic": "Command and Control",
+        "iocs": [
+          "amammhvambytjkdj.info",
+          "cjevwgfarzqu.org",
+          "gjrvqnvugbejwjcg.net",
+          "gnjjzmqlwfaqzji.net",
+          "hsmcaohzbnjuv.org",
+          "hxuxqrwqebvtad.com",
+          "jjfbdvnkamkox.info",
+          "oubdtmjfmxkpt.info",
+          "pgerimpiysseyyk.net",
+          "qtngthblmwkx.org",
+          "tkgnkuhmpxnhtqg.net",
+          "vmgarmtjuhusknrf.org",
+          "wwulweumpeldoxq.info",
+          "ykbvcpxfckgobo.net"
+        ],
+        "steps": [
+          {
+            "order": 1,
+            "action": "Sinkhole the affected domains via DNS and block via proxy category."
+          },
+          {
+            "order": 2,
+            "action": "Deploy a DGA detection rule/model on the recursive resolver."
+          },
+          {
+            "order": 3,
+            "action": "Identify and remediate the implant on the source host."
+          },
+          {
+            "order": 4,
+            "action": "Monitor NXDOMAIN response volume for the same hosts."
+          },
+          {
+            "order": 5,
+            "action": "Preserve packet captures and flow records for the affected host as forensic evidence."
+          }
+        ]
+      }
+    },
+    {
+      "event": {
+        "event_id": "41c8483929e7",
+        "event_type": "exfiltration",
+        "severity": "medium",
+        "description": "10.0.0.9 transferred 1,500,000 bytes to 198.51.100.5:443 while receiving only 0 bytes back (ratio 1500000:1), a potential data exfiltration channel.",
+        "src_ip": "10.0.0.9",
+        "dst_ip": "198.51.100.5",
+        "dst_port": 443,
+        "iocs": [
+          "198.51.100.5",
+          "198.51.100.5:443"
+        ],
+        "features": {
+          "proto": "tcp",
+          "dst_port": 443,
+          "src_bytes": 1500000,
+          "dst_bytes": 0,
+          "upload_ratio": 1500000.0,
+          "upload_download_ratio": 1500000.0,
+          "ratio_denominator_bytes": 1,
+          "download_observed": false,
+          "ratio_note": "upload / max(1, download); no reply bytes means a guarded ratio, not measured infinity",
+          "download_upload_ratio": 0.0,
+          "bytes_out": 1500000,
+          "bytes_in": 0,
+          "total_bytes": 1500000,
+          "src_packets": 25,
+          "dst_packets": 0,
+          "duration_sec": 0.24,
+          "throughput_bps": 6250000.0,
+          "avg_packet_size": 60000.0,
+          "threshold_bytes": 1000000,
+          "threshold_ratio": 10.0,
+          "first_seen": 500.0,
+          "last_seen": 500.24
+        },
+        "mitre_technique": "T1041",
+        "mitre_tactic": "Exfiltration",
+        "kill_chain_stage": "Actions on Objectives",
+        "first_seen": 500.0,
+        "last_seen": 500.24
+      },
+      "assessment": {
+        "threat_summary": "Host 10.0.0.9 uploaded 1,500,000 bytes to 198.51.100.5:443 while receiving only 0 bytes (ratio 1500000.0:1, 6250000.0 B/s). Asymmetric egress flows are the classic exfiltration signature. Mapped to MITRE ATT&CK T1041 (Exfiltration Over C2 Channel) in the Exfiltration tactic.",
+        "kill_chain_stage": "Actions on Objectives",
+        "mitre_tactic": "Exfiltration",
+        "mitre_technique_id": "T1041",
+        "technique_name": "Exfiltration Over C2 Channel",
+        "confidence_score": 0.9,
+        "iocs": [
+          "198.51.100.5",
+          "198.51.100.5:443"
+        ],
+        "ioc_details": {
+          "ip_addresses": [
+            "198.51.100.5",
+            "10.0.0.9"
+          ],
+          "domains": [],
+          "hashes": [],
+          "ja3": [],
+          "user_agents": []
+        },
+        "root_cause_analysis": "Working root-cause hypothesis: asymmetric egress is consistent with a bulk upload or possible exfiltration. Backups, replication and legitimate transfers are alternatives. Validate destination ownership, business approvals and DLP or endpoint evidence; the capture alone does not reveal stolen content.",
+        "recommended_actions": [
+          "Block 198.51.100.5 immediately and snapshot the host.",
+          "Block the destination immediately and inspect the host.",
+          "Verify whether the transfer matches a known business process.",
+          "Enable DLP and egress volume alerting.",
+          "Preserve packet captures and flow records for the affected host as forensic evidence."
+        ],
+        "severity": "medium",
+        "natural_language_explanation": "The heuristic detector fired on EXFILTRATION behaviour and the deterministic expert engine scored the evidence at 0.90 confidence. The behaviour sits in the 'Actions on Objectives' kill-chain phase and maps to T1041 (Exfiltration Over C2 Channel, Exfiltration tactic). 10.0.0.9 transferred 1,500,000 bytes to 198.51.100.5:443 while receiving only 0 bytes back (ratio 1500000:1), a potential data exfiltration channel. Treat the event as MEDIUM severity until the listed IOCs are triaged.",
+        "model": "offline-deterministic",
+        "requested_model": "",
+        "reasoning_source": "offline-deterministic",
+        "latency_ms": 0.0,
+        "threat_assessment": "Host 10.0.0.9 uploaded 1,500,000 bytes to 198.51.100.5:443 while receiving only 0 bytes (ratio 1500000.0:1, 6250000.0 B/s). Asymmetric egress flows are the classic exfiltration signature. Mapped to MITRE ATT&CK T1041 (Exfiltration Over C2 Channel) in the Exfiltration tactic.",
+        "mitre_technique": "T1041",
+        "tactic": "Exfiltration",
+        "confidence": 0.9
+      },
+      "playbook": {
+        "event_id": "41c8483929e7",
+        "title": "Mitigation playbook - Exfiltration",
+        "priority": "medium",
+        "affected_host": "10.0.0.9",
+        "destination": "198.51.100.5:443",
+        "mitre_technique": "T1041",
+        "technique_name": "Exfiltration Over C2 Channel",
+        "tactic": "Exfiltration",
+        "iocs": [
+          "198.51.100.5",
+          "198.51.100.5:443"
+        ],
+        "steps": [
+          {
+            "order": 1,
+            "action": "Block 198.51.100.5 immediately and snapshot the host."
+          },
+          {
+            "order": 2,
+            "action": "Block the destination immediately and inspect the host."
+          },
+          {
+            "order": 3,
+            "action": "Verify whether the transfer matches a known business process."
+          },
+          {
+            "order": 4,
+            "action": "Enable DLP and egress volume alerting."
+          },
+          {
+            "order": 5,
+            "action": "Preserve packet captures and flow records for the affected host as forensic evidence."
+          }
+        ]
+      }
+    }
+  ],
+  "suricata_rules": [
+    "alert tcp 10.0.0.5 any -> 203.0.113.10 8080 (msg:\"NetSentinel BEACON T1071.001 observed IOC/behaviour watch\"; flow:established,to_server; threshold:type both, track by_src, count 3, seconds 600; classtype:trojan-activity; metadata: mitre_technique_id T1071.001, event_type beacon, severity critical; sid:9000001; rev:1;)",
+    "alert tcp 10.0.0.7 any -> 10.0.0.50 any (msg:\"NetSentinel PORT_SCAN T1046 observed IOC/behaviour watch\"; flow:stateless; flags:S; threshold:type both, track by_src, count 10, seconds 60; classtype:attempted-recon; metadata: mitre_technique_id T1046, event_type port_scan, severity high; sid:9000002; rev:1;)",
+    "alert dns 10.0.0.6 any -> any 53 (msg:\"NetSentinel NXDOMAIN_STORM T1568.002 observed IOC/behaviour watch\"; flow:to_server; dns.query; pcre:\"/(?:^|\\.)(?:tkgnkuhmpxnhtqg\\.net|amammhvambytjkdj\\.info|cjevwgfarzqu\\.org|gjrvqnvugbejwjcg\\.net|gnjjzmqlwfaqzji\\.net|hsmcaohzbnjuv\\.org|hxuxqrwqebvtad\\.com|jjfbdvnkamkox\\.info|oubdtmjfmxkpt\\.info|pdxmppxmoesoo\\.info|pgerimpiysseyyk\\.net|qtngthblmwkx\\.org|vmgarmtjuhusknrf\\.org|wwulweumpeldoxq\\.info|ykbvcpxfckgobo\\.net)$/i\"; classtype:attempted-recon; metadata: mitre_technique_id T1568.002, event_type nxdomain_storm, severity high; sid:9000003; rev:1;)",
+    "alert dns 10.0.0.8 any -> any 53 (msg:\"NetSentinel DNS_TUNNELING T1071.004 observed IOC/behaviour watch\"; flow:to_server; dns.query; content:\"tunnel.evil\"; nocase; endswith; pcre:\"/(?:^|\\.)tunnel\\.evil$/i\"; classtype:trojan-activity; metadata: mitre_technique_id T1071.004, event_type dns_tunneling, severity high; sid:9000004; rev:1;)",
+    "alert dns 10.0.0.6 any -> any 53 (msg:\"NetSentinel DGA T1568.002 observed IOC/behaviour watch\"; flow:to_server; dns.query; pcre:\"/(?:^|\\.)(?:amammhvambytjkdj\\.info|cjevwgfarzqu\\.org|gjrvqnvugbejwjcg\\.net|gnjjzmqlwfaqzji\\.net|hsmcaohzbnjuv\\.org|hxuxqrwqebvtad\\.com|jjfbdvnkamkox\\.info|oubdtmjfmxkpt\\.info|pgerimpiysseyyk\\.net|qtngthblmwkx\\.org|tkgnkuhmpxnhtqg\\.net|vmgarmtjuhusknrf\\.org|wwulweumpeldoxq\\.info|ykbvcpxfckgobo\\.net)$/i\"; classtype:trojan-activity; metadata: mitre_technique_id T1568.002, event_type dga, severity high; sid:9000005; rev:1;)",
+    "alert tcp 10.0.0.9 any -> 198.51.100.5 443 (msg:\"NetSentinel EXFILTRATION T1041 observed IOC/behaviour watch\"; flow:established,to_server; dsize:>1200; threshold:type both, track by_src, count 50, seconds 60; classtype:policy-violation; metadata: mitre_technique_id T1041, event_type exfiltration, severity medium; sid:9000006; rev:1;)"
+  ],
+  "yara_rules": [
+    "rule NetSentinel_beacon_d238fcd97016\n{\n    meta:\n        author = \"NetSentinel AI - Meta Muse Wonder\"\n        description = \"Observed beacon IOC hunt; validate matches with endpoint telemetry\"\n        mitre_attck = \"T1071.001\"\n        mitre_technique = \"T1071.001\"\n        date = \"2026-10-29\"\n        severity = \"critical\"\n        source_event = \"5952c688a058\"\n    strings:\n        $ioc_0 = \"203.0.113.10\" ascii nocase\n        $ioc_1 = \"203.0.113.10:8080\" ascii nocase\n    condition:\n        any of them\n}\n",
+    "rule NetSentinel_port_scan_f79ce4e459ec\n{\n    meta:\n        author = \"NetSentinel AI - Meta Muse Wonder\"\n        description = \"Observed port_scan IOC hunt; validate matches with endpoint telemetry\"\n        mitre_attck = \"T1046\"\n        mitre_technique = \"T1046\"\n        date = \"2026-10-29\"\n        severity = \"high\"\n        source_event = \"1e684ac2848c\"\n    strings:\n        $ioc_0 = \"10.0.0.7\" ascii nocase\n        $ioc_1 = \"10.0.0.50\" ascii nocase\n    condition:\n        any of them\n}\n",
+    "rule NetSentinel_nxdomain_storm_4873b1e0b3f8\n{\n    meta:\n        author = \"NetSentinel AI - Meta Muse Wonder\"\n        description = \"Observed nxdomain_storm IOC hunt; validate matches with endpoint telemetry\"\n        mitre_attck = \"T1568.002\"\n        mitre_technique = \"T1568.002\"\n        date = \"2026-10-29\"\n        severity = \"high\"\n        source_event = \"a2ce06db6784\"\n    strings:\n        $ioc_0 = \"tkgnkuhmpxnhtqg.net\" ascii nocase\n        $ioc_1 = \"amammhvambytjkdj.info\" ascii nocase\n        $ioc_2 = \"cjevwgfarzqu.org\" ascii nocase\n        $ioc_3 = \"gjrvqnvugbejwjcg.net\" ascii nocase\n        $ioc_4 = \"gnjjzmqlwfaqzji.net\" ascii nocase\n        $ioc_5 = \"hsmcaohzbnjuv.org\" ascii nocase\n        $ioc_6 = \"hxuxqrwqebvtad.com\" ascii nocase\n        $ioc_7 = \"jjfbdvnkamkox.info\" ascii nocase\n        $ioc_8 = \"oubdtmjfmxkpt.info\" ascii nocase\n        $ioc_9 = \"pdxmppxmoesoo.info\" ascii nocase\n        $ioc_10 = \"pgerimpiysseyyk.net\" ascii nocase\n        $ioc_11 = \"qtngthblmwkx.org\" ascii nocase\n        $ioc_12 = \"vmgarmtjuhusknrf.org\" ascii nocase\n        $ioc_13 = \"wwulweumpeldoxq.info\" ascii nocase\n        $ioc_14 = \"ykbvcpxfckgobo.net\" ascii nocase\n    condition:\n        any of them\n}\n",
+    "rule NetSentinel_dns_tunneling_4d7b358d06fc\n{\n    meta:\n        author = \"NetSentinel AI - Meta Muse Wonder\"\n        description = \"Observed dns_tunneling IOC hunt; validate matches with endpoint telemetry\"\n        mitre_attck = \"T1071.004\"\n        mitre_technique = \"T1071.004\"\n        date = \"2026-10-29\"\n        severity = \"high\"\n        source_event = \"abb0ed60aa74\"\n    strings:\n        $ioc_0 = \"tunnel.evil\" ascii nocase\n    condition:\n        any of them\n}\n",
+    "rule NetSentinel_dga_b21f027a106f\n{\n    meta:\n        author = \"NetSentinel AI - Meta Muse Wonder\"\n        description = \"Observed dga IOC hunt; validate matches with endpoint telemetry\"\n        mitre_attck = \"T1568.002\"\n        mitre_technique = \"T1568.002\"\n        date = \"2026-10-29\"\n        severity = \"high\"\n        source_event = \"165a7ec67b03\"\n    strings:\n        $ioc_0 = \"amammhvambytjkdj.info\" ascii nocase\n        $ioc_1 = \"cjevwgfarzqu.org\" ascii nocase\n        $ioc_2 = \"gjrvqnvugbejwjcg.net\" ascii nocase\n        $ioc_3 = \"gnjjzmqlwfaqzji.net\" ascii nocase\n        $ioc_4 = \"hsmcaohzbnjuv.org\" ascii nocase\n        $ioc_5 = \"hxuxqrwqebvtad.com\" ascii nocase\n        $ioc_6 = \"jjfbdvnkamkox.info\" ascii nocase\n        $ioc_7 = \"oubdtmjfmxkpt.info\" ascii nocase\n        $ioc_8 = \"pgerimpiysseyyk.net\" ascii nocase\n        $ioc_9 = \"qtngthblmwkx.org\" ascii nocase\n        $ioc_10 = \"tkgnkuhmpxnhtqg.net\" ascii nocase\n        $ioc_11 = \"vmgarmtjuhusknrf.org\" ascii nocase\n        $ioc_12 = \"wwulweumpeldoxq.info\" ascii nocase\n        $ioc_13 = \"ykbvcpxfckgobo.net\" ascii nocase\n    condition:\n        any of them\n}\n",
+    "rule NetSentinel_exfiltration_7b98db61c746\n{\n    meta:\n        author = \"NetSentinel AI - Meta Muse Wonder\"\n        description = \"Observed exfiltration IOC hunt; validate matches with endpoint telemetry\"\n        mitre_attck = \"T1041\"\n        mitre_technique = \"T1041\"\n        date = \"2026-10-29\"\n        severity = \"medium\"\n        source_event = \"41c8483929e7\"\n    strings:\n        $ioc_0 = \"198.51.100.5\" ascii nocase\n        $ioc_1 = \"198.51.100.5:443\" ascii nocase\n    condition:\n        any of them\n}\n"
+  ]
+}

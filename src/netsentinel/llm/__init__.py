@@ -1,5 +1,14 @@
-"""LLM threat-reasoning package."""
-from .client import LlamaClient
-from .schemas import ThreatAssessment
+"""LLM threat-reasoning package (Meta Model API, dual-model routing)."""
+from .client import LlamaClient, MetaModelClient, RoutingRecord
+from .offline import OfflineReasoningEngine
+from .schemas import IOCBundle, ThreatAssessment, TriageVerdict
 
-__all__ = ["LlamaClient", "ThreatAssessment"]
+__all__ = [
+    "IOCBundle",
+    "LlamaClient",
+    "MetaModelClient",
+    "OfflineReasoningEngine",
+    "RoutingRecord",
+    "ThreatAssessment",
+    "TriageVerdict",
+]

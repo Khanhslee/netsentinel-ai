@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
@@ -23,7 +24,12 @@ _ALIASES = {
     "src_packets": "src_packets", "orig_pkts": "src_packets",
     "dst_packets": "dst_packets", "resp_pkts": "dst_packets",
     "start_time": "start_time", "ts": "start_time",
+    "end_time": "end_time", "duration": "duration",
     "tcp_flags": "tcp_flags", "flags": "tcp_flags",
+    "dns_qname": "dns_qname", "query": "dns_qname",
+    "dns_qtype": "dns_qtype", "qtype_name": "dns_qtype",
+    "dns_rcode": "dns_rcode", "rcode": "dns_rcode",
+    "dns_is_query": "dns_is_query",
 }
 
 
@@ -40,13 +46,14 @@ def _norm(row: Dict[str, Any]) -> Dict[str, Any]:
 def _i(v, default: int = 0) -> int:
     try:
         return int(float(v))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return default
 
 
 def _f(v, default: float = 0.0) -> float:
     try:
-        return float(v)
+        number = float(v)
+        return number if math.isfinite(number) else default
     except (TypeError, ValueError):
         return default
 
@@ -54,6 +61,8 @@ def _f(v, default: float = 0.0) -> float:
 def flows_from_dicts(rows: Iterable[Dict[str, Any]]) -> List[Flow]:
     flows: List[Flow] = []
     for raw in rows:
+        if not isinstance(raw, dict):
+            continue
         r = _norm(raw)
         if "src_ip" not in r or "dst_ip" not in r:
             continue
@@ -69,8 +78,13 @@ def flows_from_dicts(rows: Iterable[Dict[str, Any]]) -> List[Flow]:
                 src_packets=_i(r.get("src_packets")),
                 dst_packets=_i(r.get("dst_packets")),
                 start_time=_f(r.get("start_time")),
-                end_time=_f(r.get("start_time")),  # no true end_time alias
+                end_time=_f(r.get("end_time"), _f(r.get("start_time")) + _f(r.get("duration"))),
                 tcp_flags=str(r.get("tcp_flags", "")),
+                dns_qname=str(r["dns_qname"]).rstrip(".") if r.get("dns_qname") else None,
+                dns_qtype=str(r["dns_qtype"]).upper() if r.get("dns_qtype") else None,
+                dns_rcode=_i(r.get("dns_rcode")) if "dns_rcode" in r else None,
+                dns_is_query=(str(r["dns_is_query"]).lower() in ("true", "1", "yes"))
+                if "dns_is_query" in r else (_i(r.get("src_port")) != 53 if r.get("dns_qname") else None),
             )
         )
     return flows
@@ -80,6 +94,8 @@ def parse_json(path) -> List[Flow]:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     if isinstance(data, dict):
         data = data.get("flows", data.get("records", []))
+    if not isinstance(data, list):
+        raise ValueError("Flow JSON must be an array or an object containing a flows/records array")
     return flows_from_dicts(data)
 
 

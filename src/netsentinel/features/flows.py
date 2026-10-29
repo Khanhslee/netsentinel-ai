@@ -52,3 +52,44 @@ def second_level_domain(fqdn: str) -> str:
     if len(labels) <= 1:
         return labels[0] if labels else ""
     return ".".join(labels[-2:])
+
+
+def safe_div(numerator: float, denominator: float, default: float = 0.0) -> float:
+    """Division that never raises and never returns infinity/NaN."""
+    try:
+        if not denominator:
+            return default
+        return float(numerator) / float(denominator)
+    except (TypeError, ValueError, ZeroDivisionError):
+        return default
+
+
+def coefficient_of_variation(mean: float, std: float) -> float:
+    """Coefficient of variation (sigma / mu) - the beacon jitter metric."""
+    return round(safe_div(std, mean), 4)
+
+
+def entropy_profile(values: Iterable[str]) -> dict:
+    """Summarise Shannon entropy across a set of strings (forensic evidence)."""
+    scores = [shannon_entropy(v) for v in values if v]
+    if not scores:
+        return {"count": 0, "min": 0.0, "max": 0.0, "avg": 0.0}
+    return {
+        "count": len(scores),
+        "min": round(min(scores), 3),
+        "max": round(max(scores), 3),
+        "avg": round(sum(scores) / len(scores), 3),
+    }
+
+
+def label_length_stats(names: Iterable[str]) -> dict:
+    """Longest / average DNS label length across a set of FQDNs."""
+    lengths = [max((len(lbl) for lbl in n.split(".")), default=0) for n in names if n]
+    if not lengths:
+        return {"max": 0, "avg": 0.0}
+    return {"max": max(lengths), "avg": round(sum(lengths) / len(lengths), 2)}
+
+
+def throughput(n_bytes: int, seconds: float) -> float:
+    """Bytes per second, guarding against zero/negative durations."""
+    return round(safe_div(n_bytes, max(seconds, 1e-6)), 2)

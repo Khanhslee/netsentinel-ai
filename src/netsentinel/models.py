@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 
 @dataclass
 class Flow:
-    """A unidirectional network flow (5-tuple + counters + timing)."""
+    """An origin-oriented session or DNS observation with directional counters."""
 
     src_ip: str
     dst_ip: str
@@ -93,7 +93,17 @@ class SuspiciousEvent:
     iocs: List[str] = field(default_factory=list)
     features: Dict[str, Any] = field(default_factory=dict)
     mitre_technique: str = ""
+    mitre_tactic: str = ""
+    kill_chain_stage: str = ""
+    #: Epoch seconds of the first/last contributing flow (0.0 when unknown).
+    first_seen: float = 0.0
+    last_seen: float = 0.0
     event_id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
+
+    @property
+    def timestamp(self) -> float:
+        """Sort key for the correlation timeline."""
+        return self.first_seen or self.last_seen
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -107,6 +117,10 @@ class SuspiciousEvent:
             "iocs": self.iocs,
             "features": self.features,
             "mitre_technique": self.mitre_technique,
+            "mitre_tactic": self.mitre_tactic,
+            "kill_chain_stage": self.kill_chain_stage,
+            "first_seen": self.first_seen,
+            "last_seen": self.last_seen,
         }
 
 

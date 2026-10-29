@@ -12,7 +12,7 @@ def interactive_loop(settings: Settings | None = None) -> None:
     result: AnalysisResult | None = None
 
     print("NetSentinel AI - interactive analyst console")
-    print("Gõ đường dẫn file PCAP/flow để phân tích, hoặc 'help'.")
+    print("Enter a PCAP / flow file path to analyze, or type 'help'.")
 
     while True:
         try:
@@ -29,9 +29,9 @@ def interactive_loop(settings: Settings | None = None) -> None:
         if _looks_like_path(raw):
             try:
                 result = analyze_path(raw, settings=settings, use_llm=True)
-                print(f"Đã phân tích {raw}: tìm thấy {len(result.report.events)} sự kiện.")
+                print(f"Analyzed {raw}: found {len(result.report.events)} findings.")
             except Exception as exc:
-                print(f"Lỗi phân tích: {exc}")
+                print(f"Analysis failed: {exc}")
             continue
 
         print(answer_query(result, raw))

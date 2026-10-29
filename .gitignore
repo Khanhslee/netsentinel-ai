@@ -22,8 +22,10 @@ Thumbs.db
 
 # Chainlit auto-generated runtime files
 .chainlit/
+.files/
 
 # Project artifacts
 data/*.pcap
 data/*.pcapng
+!data/demo.pcap
 *.log

@@ -16,6 +16,7 @@ from __future__ import annotations
 import random
 import string
 import sys
+from pathlib import Path
 
 DNS_SERVER = "8.8.8.8"
 
@@ -107,13 +108,14 @@ def build_packets() -> list:
             t=500.0 + i * 0.01,
         )
 
-    return packets
+    return sorted(packets, key=lambda packet: float(packet.time))
 
 
 def main() -> int:
     from scapy.all import wrpcap  # type: ignore
 
     output = sys.argv[1] if len(sys.argv) > 1 else "data/demo.pcap"
+    Path(output).parent.mkdir(parents=True, exist_ok=True)
     packets = build_packets()
     wrpcap(output, packets)
     print(f"Wrote {len(packets)} packets to {output}")
