@@ -35,15 +35,21 @@ from .schemas import (
     ThreatAssessment,
     AssessmentOutput,
     TriageBatchOutput,
+    TriageOutput,
     TriageVerdict,
     coerce_assessment,
     strict_response_format,
 )
+from ..mitre import kill_chain_stage_for
 
 log = get_logger(__name__)
 
 #: HTTP status codes that mean "stop calling the API for this run".
 FATAL_STATUS_CODES = (401, 403, 429)
+#: Hard ceiling for the retried output budget (reasoning tokens included).
+MAX_OUTPUT_TOKENS = 32000
+#: Timeout used for the retried call when the model was too slow the first time.
+SLOW_CALL_TIMEOUT = 180.0
 
 
 @dataclass
@@ -79,6 +85,9 @@ class MetaModelClient:
         self._client = None
         self._circuit_open_reason: str = ""
         self._campaign_context: str = ""
+        #: ``None`` = untested, ``True``/``False`` = endpoint accepted/rejected
+        #: ``response_format``. Once rejected it is never sent again this run.
+        self._response_format_supported: Optional[bool] = None
 
     # -- availability -------------------------------------------------------
     def available(self) -> bool:
@@ -120,6 +129,23 @@ class MetaModelClient:
         return self._client
 
     # -- low-level call -----------------------------------------------------
+    def _response_format(self, schema_model=None) -> Optional[Dict[str, Any]]:
+        """Return the structured-output hint, or ``None`` when unsupported.
+
+        The Meta Model API is OpenAI-compatible but not every route accepts
+        ``response_format``; the first rejection disables it for the whole run
+        instead of failing the analysis (the JSON is extracted from the text
+        afterwards anyway).
+        """
+        if self._response_format_supported is False:
+            return None
+        if self.cfg.use_json_schema and schema_model is not None:
+            try:
+                return strict_response_format(schema_model)
+            except Exception:  # noqa: BLE001 - fall back to plain JSON mode
+                return {"type": "json_object"}
+        return {"type": "json_object"}
+
     def _chat(
         self,
         model: str,
@@ -129,29 +155,107 @@ class MetaModelClient:
         max_tokens: Optional[int] = None,
         json_mode: bool = True,
         schema_model=None,
+        attempts: int = 3,
     ) -> str:
-        kwargs: Dict[str, Any] = {
-            "model": model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            "temperature": self.cfg.temperature if temperature is None else temperature,
-            "max_tokens": self.cfg.max_tokens if max_tokens is None else max_tokens,
-        }
-        if json_mode:
-            kwargs["response_format"] = (
-                strict_response_format(schema_model)
-                if self.cfg.use_json_schema and schema_model is not None
-                else {"type": "json_object"}
+        """Call the Meta Model API and return the raw text of the reply.
+
+        Reasoning models spend most of their output budget on hidden reasoning
+        tokens, so a small ``max_tokens`` can return ``finish_reason="length"``
+        with ``content=None``. Rather than raising (which used to look like a
+        response-validation failure), the budget - and, on a timeout, the
+        deadline - is widened and the call retried. ``response_format`` is
+        dropped for the rest of the run if the endpoint rejects it, and a
+        non-``stop`` finish reason or an empty answer is never an error.
+        """
+        budget = int(max_tokens or self.cfg.max_tokens)
+        retries_left = max(1, int(attempts))
+        format_dropped = not json_mode
+        format_rejected = False
+        slow_call = False
+        while True:
+            kwargs: Dict[str, Any] = {
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                "temperature": self.cfg.temperature if temperature is None else temperature,
+                "max_tokens": min(budget, MAX_OUTPUT_TOKENS),
+            }
+            if not format_dropped:
+                response_format = self._response_format(schema_model)
+                if response_format is not None:
+                    kwargs["response_format"] = response_format
+                else:
+                    format_dropped = True
+            timeout = self.cfg.timeout
+            if slow_call:
+                timeout = max(float(self.cfg.timeout), SLOW_CALL_TIMEOUT)
+            try:
+                completion = self._get_client().chat.completions.create(
+                    **kwargs, timeout=timeout
+                )
+            except Exception as exc:  # noqa: BLE001 - classified below
+                if (not format_dropped and not format_rejected
+                        and _rejects_response_format(exc)):
+                    # Endpoint does not support structured output: retry as text.
+                    format_rejected = format_dropped = True
+                    self._response_format_supported = False
+                    log.warning(
+                        "Meta endpoint rejected response_format (%s); retrying in "
+                        "plain text mode and extracting JSON from the reply.",
+                        type(exc).__name__,
+                    )
+                    continue
+                if _status_of(exc) in FATAL_STATUS_CODES or not _is_transient(exc):
+                    raise
+                retries_left -= 1
+                if retries_left <= 0:
+                    raise
+                slow_call = True
+                budget = _grow_budget(budget)
+                log.warning(
+                    "Meta Model API call was slow or dropped (%s); retrying with "
+                    "max_tokens=%d and a %ss deadline.",
+                    type(exc).__name__, min(budget, MAX_OUTPUT_TOKENS),
+                    int(max(float(self.cfg.timeout), SLOW_CALL_TIMEOUT)),
+                )
+                continue
+
+            if not format_dropped:
+                self._response_format_supported = True
+            text = _response_text(completion)
+            # A reasoning model can spend the entire budget on hidden reasoning:
+            # empty content, or JSON cut in half, simply means "retry with more
+            # room". It is never a validation error.
+            incomplete = not text.strip() or (
+                json_mode and not _has_json_value(text)
             )
-        completion = self._get_client().chat.completions.create(**kwargs)
-        choice = completion.choices[0]
-        if getattr(choice, "finish_reason", "stop") not in ("stop", None):
-            raise ValueError("Incomplete model response")
-        if getattr(choice.message, "refusal", None):
-            raise ValueError("Model declined the analysis")
-        return choice.message.content or ""
+            if not incomplete:
+                return text
+
+            retries_left -= 1
+            if retries_left <= 0:
+                if text.strip():
+                    log.warning(
+                        "Meta model reply was truncated (finish_reason=%r) and is not "
+                        "valid JSON; repairing this item from the heuristics.",
+                        _finish_reason(completion),
+                    )
+                    return text
+                log.warning(
+                    "Meta model returned no text (finish_reason=%r); falling back "
+                    "to the deterministic expert engine for this item.",
+                    _finish_reason(completion),
+                )
+                return ""
+            slow_call = True
+            budget = _grow_budget(budget)
+            log.warning(
+                "Meta model reply was truncated (finish_reason=%r); retrying with "
+                "max_tokens=%d.",
+                _finish_reason(completion), min(budget, MAX_OUTPUT_TOKENS),
+            )
 
     def _record_offline(self, tier: str, model: str) -> None:
         self.routing_history.append(RoutingRecord(
@@ -159,7 +263,14 @@ class MetaModelClient:
             fallback_reason=self.fallback_reason,
         ))
 
-    def _trip(self, tier: str, model: str, exc: Exception, started: float) -> None:
+    def _record_failure(
+        self, tier: str, model: str, exc: Exception, started: float
+    ) -> None:
+        """Record a transport/auth failure and open the circuit breaker.
+
+        Response *content* problems never reach here: they are repaired from
+        the deterministic heuristics and leave the API enabled for other items.
+        """
         reason = _describe_error(exc)
         self._circuit_open_reason = reason
         self.routing_history.append(
@@ -175,6 +286,15 @@ class MetaModelClient:
         log.warning(
             "Meta Model API call failed (%s); switching to deterministic expert engine.",
             reason,
+        )
+
+    def _record_degraded(self, tier: str, model: str, reason: str) -> None:
+        """Record a locally-served item without opening the circuit breaker."""
+        self.routing_history.append(
+            RoutingRecord(
+                tier=tier, model=model, source="offline-deterministic",
+                ok=False, fallback_reason=reason,
+            )
         )
 
     # -- Tier 1: fast batch triage (muse-spark-1.3) -------------------------
@@ -214,24 +334,28 @@ class MetaModelClient:
                 max_tokens=self.cfg.max_tokens,
                 schema_model=TriageBatchOutput,
             )
-            payload = TriageBatchOutput.model_validate(_extract_json(content)).model_dump()["verdicts"]
-            verdicts = _coerce_verdicts(payload, events, model=self.cfg.triage_model)
-            self.routing_history.append(
-                RoutingRecord(
-                    tier="tier1-triage",
-                    model=self.cfg.triage_model,
-                    source="meta-model-api",
-                    latency_ms=(time.perf_counter() - started) * 1000,
-                )
-            )
-            self.last_triage = verdicts
-            return verdicts
         except Exception as exc:  # noqa: BLE001 - fallback must catch everything
-            self._trip("tier1-triage", self.cfg.triage_model, exc, started)
+            self._record_failure("tier1-triage", self.cfg.triage_model, exc, started)
             self.last_triage = [
                 self.offline.triage(e, model=self.cfg.triage_model) for e in events
             ]
             return self.last_triage
+
+        # Model drift (renamed keys, prose, fences, missing ids) is repaired,
+        # never raised: the verdicts that are usable are kept.
+        verdicts = _coerce_verdicts(
+            _triage_payload(content), events, model=self.cfg.triage_model
+        )
+        self.routing_history.append(
+            RoutingRecord(
+                tier="tier1-triage",
+                model=self.cfg.triage_model,
+                source="meta-model-api",
+                latency_ms=(time.perf_counter() - started) * 1000,
+            )
+        )
+        self.last_triage = verdicts
+        return verdicts
 
     # -- Tier 2: deep reasoning (muse-wonder-1.0) ---------------------------
     def analyze_event(
@@ -254,28 +378,42 @@ class MetaModelClient:
                 max_tokens=self.cfg.max_tokens,
                 schema_model=AssessmentOutput,
             )
-            payload = AssessmentOutput.model_validate(_extract_json(content)).model_dump()
-            assessment = coerce_assessment(
-                payload,
-                event=event,
+        except Exception as exc:  # noqa: BLE001 - fallback must catch everything
+            self._record_failure("tier2-reasoning", self.cfg.reasoning_model, exc, started)
+            return self.offline.assess(event, self.cfg.reasoning_model)
+
+        payload = _assessment_payload(content)
+        if payload is None:
+            # The API answered, but not with JSON we can use: repair silently
+            # from the detector heuristics instead of abandoning the endpoint.
+            self._record_degraded(
+                "tier2-reasoning", self.cfg.reasoning_model,
+                "model reply contained no JSON object",
+            )
+            log.warning(
+                "Meta Model API reply for %s contained no JSON object; using the "
+                "deterministic expert engine for this event.",
+                event.event_id,
+            )
+            return self.offline.assess(event, self.cfg.reasoning_model)
+
+        assessment = coerce_assessment(
+            payload,
+            event=event,
+            model=self.cfg.reasoning_model,
+            source="meta-model-api",
+        )
+        assessment.latency_ms = round((time.perf_counter() - started) * 1000, 2)
+        self.routing_history.append(
+            RoutingRecord(
+                tier="tier2-reasoning",
                 model=self.cfg.reasoning_model,
                 source="meta-model-api",
+                latency_ms=assessment.latency_ms,
             )
-            if assessment.reasoning_source != "meta-model-api":
-                raise ValueError("Invalid assessment output")
-            assessment.latency_ms = round((time.perf_counter() - started) * 1000, 2)
-            self.routing_history.append(
-                RoutingRecord(
-                    tier="tier2-reasoning",
-                    model=self.cfg.reasoning_model,
-                    source="meta-model-api",
-                    latency_ms=assessment.latency_ms,
-                )
-            )
-            return assessment
-        except Exception as exc:  # noqa: BLE001 - fallback must catch everything
-            self._trip("tier2-reasoning", self.cfg.reasoning_model, exc, started)
-            return self.offline.assess(event, self.cfg.reasoning_model)
+        )
+        return assessment
+
 
     def analyze_events(
         self,
@@ -361,7 +499,7 @@ class MetaModelClient:
             )
             return content.strip() or fallback_answer or self.offline.chat(question, context)
         except Exception as exc:  # noqa: BLE001
-            self._trip("copilot", self.cfg.reasoning_model, exc, started)
+            self._record_failure("copilot", self.cfg.reasoning_model, exc, started)
             return fallback_answer or self.offline.chat(question, context)
 
     # -- observability ------------------------------------------------------
@@ -392,35 +530,131 @@ LlamaClient = MetaModelClient
 # ---------------------------------------------------------------------------
 # JSON helpers
 # ---------------------------------------------------------------------------
+#: Markdown fence wrapper around a JSON block (```json ... ``` / ``` ... ```).
+_FENCE_RE = re.compile(r"```[A-Za-z0-9_+-]*\s*(.*?)\s*```", re.DOTALL)
+#: Greedy match = the *outermost* ``{...}`` / ``[...]`` pair in the text.
+_OBJECT_BLOCK_RE = re.compile(r"\{.*\}", re.DOTALL)
+_ARRAY_BLOCK_RE = re.compile(r"\[.*\]", re.DOTALL)
+#: Keys under which a model may nest the verdict list or the assessment.
+_WRAPPER_KEYS = ("verdicts", "triage", "results", "events", "items", "data",
+                 "classifications", "assessment", "threat_assessment", "analysis",
+                 "result", "response")
+
+
 def _strip_fences(text: str) -> str:
+    """Return the payload of a ```json ... ``` block, fences removed."""
+    cleaned = (text or "").strip()
+    blocks = _FENCE_RE.findall(cleaned)
+    for block in blocks:
+        if "{" in block or "[" in block:
+            return block.strip()
+    if blocks:
+        return blocks[0].strip()
     return re.sub(
-        r"^\s*```(?:json)?\s*|\s*```\s*$", "", text.strip(), flags=re.IGNORECASE
+        r"^\s*```[A-Za-z0-9_+-]*\s*|\s*```\s*$", "", cleaned, flags=re.IGNORECASE
     ).strip()
 
 
+def _has_json_value(text: str) -> bool:
+    """True when the reply holds a complete JSON document (never a fragment).
+
+    A truncated reply (``finish_reason="length"``) can still contain complete
+    *nested* objects - ``{"ioc_details": {...}`` cut off - so the top-level
+    document is decoded from its first brace rather than scanning for any
+    decodable fragment.
+    """
+    stripped = _strip_fences(text)
+    if not stripped:
+        return False
+    if stripped[0] in "{[":
+        try:
+            _, end = json.JSONDecoder().raw_decode(stripped)
+        except json.JSONDecodeError:
+            return False
+        tail = stripped[end:].strip()
+        # Trailing prose is acceptable; stray brackets mean unbalanced output.
+        return not any(char in tail for char in "{}[]")
+    return _scan_json(stripped, "{", dict) is not None or _scan_json(
+        stripped, "[", list
+    ) is not None
+
+
+def _scan_json(text: str, opener: str, expected: type) -> Optional[Any]:
+    """Decode the first ``expected`` JSON value starting at any ``opener``."""
+    decoder = json.JSONDecoder()
+    for index, char in enumerate(text):
+        if char != opener:
+            continue
+        try:
+            value, _ = decoder.raw_decode(text[index:])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, expected):
+            return value
+    return None
+
+
 def _extract_json(text: str) -> dict:
-    """Robustly extract a JSON object from a model response."""
+    """Robustly extract a JSON object from a model response.
+
+    Tolerates markdown fences, prose before/after the payload and stray braces
+    by falling back to the *outermost* ``{...}`` match and then to an
+    incremental ``raw_decode`` scan.
+    """
     text = _strip_fences(text)
+    if not text:
+        raise ValueError("Model response was empty")
     try:
         data = json.loads(text)
-        if isinstance(data, dict):
-            return data
     except json.JSONDecodeError:
-        pass
-    # Find the largest balanced {...} object.
-    start = text.find("{")
-    end = text.rfind("}")
-    if start != -1 and end != -1 and end > start:
+        data = None
+    if isinstance(data, dict):
+        return data
+    if isinstance(data, list):
+        for item in data:
+            if isinstance(item, dict):
+                return item
+    if text[0] in "{[":
+        # The reply *is* the JSON document: if it does not decode it was cut off
+        # by the token limit, and salvaging a nested fragment would silently
+        # drop most of the assessment.
+        raise ValueError("Model response contained truncated JSON")
+
+    for candidate in _OBJECT_BLOCK_RE.findall(text):
         try:
-            return json.loads(text[start : end + 1])
+            parsed = json.loads(candidate)
         except json.JSONDecodeError:
-            pass
+            continue
+        if isinstance(parsed, dict):
+            return parsed
+
+    parsed = _scan_json(text, "{", dict)
+    if isinstance(parsed, dict):
+        return parsed
+
+    # A bare array of one object (common for batch prompts) still carries data.
+    for candidate in _ARRAY_BLOCK_RE.findall(text):
+        try:
+            parsed = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, list):
+            for item in parsed:
+                if isinstance(item, dict):
+                    return item
+    parsed = _scan_json(text, "[", list)
+    if isinstance(parsed, list):
+        for item in parsed:
+            if isinstance(item, dict):
+                return item
     raise ValueError("No JSON object found in model response")
 
 
 def _extract_json_array(text: str) -> list:
     """Robustly extract a JSON array (or a wrapper object containing one)."""
     text = _strip_fences(text)
+    if not text:
+        raise ValueError("Model response was empty")
     try:
         data = json.loads(text)
     except json.JSONDecodeError:
@@ -428,28 +662,138 @@ def _extract_json_array(text: str) -> list:
     if isinstance(data, list):
         return data
     if isinstance(data, dict):
-        for key in ("verdicts", "events", "results", "items", "data"):
+        for key in _WRAPPER_KEYS:
             if isinstance(data.get(key), list):
                 return data[key]
         return [data] if "event_id" in data else []
-    start = text.find("[")
-    end = text.rfind("]")
-    if start != -1 and end != -1 and end > start:
+    for candidate in _ARRAY_BLOCK_RE.findall(text):
         try:
-            data = json.loads(text[start : end + 1])
-            if isinstance(data, list):
-                return data
+            parsed = json.loads(candidate)
         except json.JSONDecodeError:
-            pass
-    raise ValueError("No JSON array found in model response")
+            continue
+        if isinstance(parsed, list):
+            return parsed
+    try:
+        payload = _extract_json(text)
+    except ValueError:
+        raise ValueError("No JSON array found in model response") from None
+    for key in _WRAPPER_KEYS:
+        if isinstance(payload.get(key), list):
+            return payload[key]
+    return [payload]
 
 
-def _describe_error(exc: Exception) -> str:
-    """Human-readable reason recorded when the API is abandoned."""
+def _triage_payload(content: str) -> List[Any]:
+    """Parse Tier-1 output into verdict dicts; never raises for model drift."""
+    if not (content or "").strip():
+        return []
+    try:
+        parsed = TriageBatchOutput.model_validate(_extract_json(content))
+        return [item.model_dump() for item in parsed.verdicts]
+    except Exception:  # noqa: BLE001 - prose / fence / bare-array variants
+        pass
+    try:
+        raw = _extract_json_array(content)
+    except Exception:  # noqa: BLE001 - nothing JSON-shaped in the reply
+        return []
+    items: List[Any] = []
+    for item in raw:
+        if isinstance(item, dict):
+            items.append(TriageOutput.model_validate(item).model_dump())
+    return items
+
+
+def _assessment_payload(content: str) -> Optional[Dict[str, Any]]:
+    """Parse Tier-2 output into a dict, or ``None`` when nothing is parseable."""
+    if not (content or "").strip():
+        return None
+    try:
+        return _extract_json(content)
+    except Exception:  # noqa: BLE001 - caller repairs from the heuristics
+        return None
+
+
+def _content_text(value: Any) -> str:
+    """Flatten a chat message ``content`` (str, list of parts or dict) to text."""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        text = value.get("text")
+        return text if isinstance(text, str) else ""
+    if isinstance(value, (list, tuple)):
+        return "".join(_content_text(part) for part in value)
+    return ""
+
+
+def _response_text(completion: Any) -> str:
+    """Extract the answer text from a chat completion, tolerating ``None``."""
+    try:
+        choice = completion.choices[0]
+    except (AttributeError, IndexError, KeyError, TypeError):
+        return ""
+    message = getattr(choice, "message", None)
+    if message is None:
+        return ""
+    text = _content_text(getattr(message, "content", None))
+    if text.strip():
+        return text
+    # Some reasoning endpoints expose the text elsewhere.
+    for attribute in ("reasoning_content", "reasoning", "text"):
+        extra = getattr(message, attribute, None)
+        if isinstance(extra, str) and extra.strip():
+            return extra
+    extra_fields = getattr(message, "model_extra", None) or {}
+    if isinstance(extra_fields, dict):
+        for key in ("reasoning_content", "reasoning", "content"):
+            value = extra_fields.get(key)
+            if isinstance(value, str) and value.strip():
+                return value
+    return text
+
+
+def _finish_reason(completion: Any) -> Any:
+    try:
+        return completion.choices[0].finish_reason
+    except (AttributeError, IndexError, KeyError, TypeError):
+        return None
+
+
+def _grow_budget(budget: int) -> int:
+    """Widen the output budget so reasoning tokens cannot starve the JSON."""
+    return min(max(int(budget) * 2, 2048), MAX_OUTPUT_TOKENS)
+
+
+def _status_of(exc: Exception) -> Optional[int]:
     status = getattr(exc, "status_code", None)
     if status is None:
         response = getattr(exc, "response", None)
         status = getattr(response, "status_code", None)
+    return status if isinstance(status, int) else None
+
+
+def _rejects_response_format(exc: Exception) -> bool:
+    """True when the endpoint refused ``response_format`` / structured output."""
+    message = str(exc).lower()
+    if any(token in message for token in (
+        "response_format", "json_schema", "json schema", "structured output",
+        "unsupported parameter", "unknown parameter",
+        "unrecognized request argument", "not supported",
+    )):
+        return True
+    return _status_of(exc) in (400, 404, 415, 422)
+
+
+def _is_transient(exc: Exception) -> bool:
+    """True for timeout/dropped-connection faults that a retry can absorb."""
+    name = type(exc).__name__.lower()
+    if "timeout" in name or "connection" in name:
+        return True
+    return isinstance(exc, (TimeoutError, ConnectionError))
+
+
+def _describe_error(exc: Exception) -> str:
+    """Human-readable reason recorded when an item is served locally."""
+    status = _status_of(exc)
     if status in (401, 403):
         return f"HTTP {status} authentication/permission error"
     if status == 429:
@@ -458,31 +802,50 @@ def _describe_error(exc: Exception) -> str:
         return f"HTTP {status} from Meta Model API"
     # Exception messages may contain request headers, keys or captured payloads.
     # Report a useful class without reflecting sensitive server/transport text.
-    return f"{type(exc).__name__}: request or response validation failed"
+    return f"{type(exc).__name__}: no usable model response"
 
 
 def _coerce_verdicts(
     payload: Sequence[Any], events: Sequence[SuspiciousEvent], model: str
 ) -> List[TriageVerdict]:
-    """Validate Tier-1 output and repair anything the model skipped."""
+    """Repair Tier-1 output: keep usable verdicts, fill the rest heuristically.
+
+    Unknown or duplicated ``event_id`` values are dropped (the model may not
+    re-assign evidence to an event it was never given), and every event the
+    model skipped is triaged locally. Nothing here raises, so a partially
+    malformed batch still benefits from the model instead of falling back.
+    """
+    offline = OfflineReasoningEngine()
     by_id = {e.event_id: e for e in events}
     verdicts: Dict[str, TriageVerdict] = {}
     for item in payload:
         if not isinstance(item, dict):
             continue
-        event_id = str(item.get("event_id") or "")
-        if event_id not in by_id or event_id in verdicts:
-            raise ValueError("Triage returned an unknown or duplicate event_id")
+        event_id = str(item.get("event_id") or item.get("eventId") or "").strip()
+        event = by_id.get(event_id)
+        if event is None or event_id in verdicts:
+            continue
         try:
             verdict = TriageVerdict.model_validate({**item, "event_id": event_id})
-        except Exception as exc:
-            raise ValueError("Invalid triage verdict") from exc
-        verdict.event_type = by_id[event_id].event_type
+        except Exception:  # noqa: BLE001 - repair this single verdict locally
+            verdict = offline.triage(event, model=model)
+        verdict.event_type = event.event_type
+        if not verdict.kill_chain_stage:
+            verdict.kill_chain_stage = event.kill_chain_stage or kill_chain_stage_for(
+                event.event_type
+            )
+        if not verdict.rationale:
+            verdict.rationale = event.description
         verdict.model = model
         verdict.requested_model = model
         verdict.source = "meta-model-api"
         verdicts[event_id] = verdict
 
-    if set(verdicts) != set(by_id):
-        raise ValueError("Triage omitted input event identifiers")
+    for event in events:
+        if event.event_id not in verdicts:
+            verdict = offline.triage(event, model=model)
+            verdict.kill_chain_stage = verdict.kill_chain_stage or (
+                event.kill_chain_stage or kill_chain_stage_for(event.event_type)
+            )
+            verdicts[event.event_id] = verdict
     return [verdicts[e.event_id] for e in events]

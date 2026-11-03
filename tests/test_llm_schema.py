@@ -35,6 +35,23 @@ def test_extract_json_fenced():
     assert _extract_json(text)["threat_assessment"] == "x"
 
 
+def test_extract_json_from_prose_with_trailing_braces():
+    text = 'Analysis complete. {"a": {"b": 1}} hope that helps }'
+    assert _extract_json(text) == {"a": {"b": 1}}
+
+
+def test_extract_json_from_fenced_block_with_surrounding_prose():
+    text = 'Sure!\n```json\n{"verdicts": [{"event_id": "e1"}]}\n```\nAnything else?'
+    assert _extract_json(text)["verdicts"][0]["event_id"] == "e1"
+
+
+def test_extract_json_rejects_text_without_any_json():
+    import pytest
+
+    with pytest.raises(ValueError):
+        _extract_json("no structured data here")
+
+
 def test_pipeline_offline_end_to_end():
     result = analyze_flows([], use_llm=False)
     assert result.report.flows_count == 0

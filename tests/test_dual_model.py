@@ -52,6 +52,23 @@ def fake_sdk(client, responses):
     return calls
 
 
+def fake_sdk_text(client, texts):
+    """Fake SDK returning raw message text (no json.dumps wrapping)."""
+    calls = []
+    responses = iter(texts)
+
+    def create(**kwargs):
+        calls.append(kwargs)
+        return SimpleNamespace(choices=[SimpleNamespace(
+            finish_reason="stop", message=SimpleNamespace(content=next(responses)),
+        )])
+
+    client._client = SimpleNamespace(chat=SimpleNamespace(
+        completions=SimpleNamespace(create=create),
+    ))
+    return calls
+
+
 def test_api_key_priority_and_blank_values(monkeypatch):
     monkeypatch.setenv("LLAMA_API_KEY", "legacy")
     monkeypatch.setenv("MODEL_API_KEY", "official")
@@ -147,20 +164,46 @@ def test_spark_triage_then_wonder_reasoning_and_copilot(monkeypatch):
     assert "response_format" not in calls[-1]
 
 
-def test_strict_nested_schema_and_invalid_model_output_trigger_fallback():
+def test_lenient_schema_repairs_partial_and_drifting_model_output():
     schema = strict_response_format(AssessmentOutput)["json_schema"]["schema"]
     assert schema["additionalProperties"] is False
     assert set(schema["required"]) == set(schema["properties"])
     nested = schema["$defs"]["IOCBundle"]
     assert nested["additionalProperties"] is False
     assert set(nested["required"]) == set(nested["properties"])
-    for output in ({}, {**wire_assessment(event()), "confidence_score": 1.5}):
+    # Nothing below is allowed to trip the fallback: the payload is repaired.
+    drifting = [
+        {},
+        {**wire_assessment(event()), "confidence_score": 1.5},
+        {"kill_chain_stage": "command_and_control", "severity": "SEVERE",
+         "confidence_score": "92%", "mitre_technique": "T1071.001 - Web Protocols"},
+        {"assessment": {"summary": "Suspicious beacon", "confidence": 0.7}},
+        "```json\n{}\n```",
+    ]
+    for output in drifting:
         client = MetaModelClient(MetaModelConfig(api_key="test"))
         fake_sdk(client, [output])
         result = client.analyze_event(event())
-        assert result.reasoning_source == "offline-deterministic"
+        assert result.reasoning_source == "meta-model-api"
+        assert 0.0 <= result.confidence_score <= 1.0
         assert result.root_cause_analysis and result.recommended_actions
-        assert client.mode == "offline-deterministic"
+        assert result.kill_chain_stage and result.mitre_technique_id
+        assert client.mode == "meta-model-api"
+
+
+def test_model_drift_is_normalised_instead_of_rejected():
+    client = MetaModelClient(MetaModelConfig(api_key="test"))
+    fake_sdk(client, [{"kill_chain_stage": "C2", "severity": "high",
+                       "confidence_score": "95%", "mitre_technique_id": "1071.001",
+                       "threat_assessment": "periodic beacon", "iocs": "203.0.113.10",
+                       "recommended_actions": "Block egress\nIsolate host"}])
+    result = client.analyze_event(event())
+    assert result.reasoning_source == "meta-model-api"
+    assert result.kill_chain_stage == "Command and Control"
+    assert result.confidence_score == 0.95
+    assert result.mitre_technique_id == "T1071.001"
+    assert result.threat_summary == "periodic beacon"
+    assert result.recommended_actions  # filled from the MITRE guidance
 
 
 def test_http_and_network_failures_open_circuit_without_secret_leaks():
@@ -178,16 +221,121 @@ def test_http_and_network_failures_open_circuit_without_secret_leaks():
         assert client.routing_summary()["offline_fallbacks"] == 2
 
 
-def test_unknown_triage_identifier_falls_back_without_misassigning_events():
+def test_endpoint_rejecting_response_format_is_retried_as_plain_text():
+    class UnsupportedParameter(RuntimeError):
+        status_code = 400
+
+        def __str__(self):
+            return "Unsupported parameter: response_format"
+
+    client = MetaModelClient(MetaModelConfig(api_key="test"))
+    calls = fake_sdk(client, [UnsupportedParameter(), wire_assessment(event())])
+    result = client.analyze_event(event())
+    assert result.reasoning_source == "meta-model-api"
+    assert "response_format" in calls[0]
+    assert "response_format" not in calls[1]
+    assert client._response_format_supported is False
+
+
+def test_reasoning_truncation_retries_with_a_larger_budget():
     item = event()
-    for batch in ([verdict(item, event_id="invented-id")], [], [verdict(item), verdict(item)]):
+    truncated = [
+        SimpleNamespace(choices=[SimpleNamespace(
+            finish_reason="length", message=SimpleNamespace(content=None))]),
+        SimpleNamespace(choices=[SimpleNamespace(
+            finish_reason="length",
+            message=SimpleNamespace(content='{"threat_summary": "cut off'))]),
+        SimpleNamespace(choices=[SimpleNamespace(
+            finish_reason="stop",
+            message=SimpleNamespace(content=json.dumps(wire_assessment(item))))]),
+    ]
+    calls = []
+    pending = iter(truncated)
+
+    def create(**kwargs):
+        calls.append(kwargs)
+        return next(pending)
+
+    client = MetaModelClient(MetaModelConfig(api_key="test"))
+    client._client = SimpleNamespace(chat=SimpleNamespace(
+        completions=SimpleNamespace(create=create),
+    ))
+    result = client.analyze_event(item)
+    assert result.reasoning_source == "meta-model-api"
+    assert [call["max_tokens"] for call in calls] == [1400, 2800, 5600]
+
+
+def test_triage_accepts_fenced_json_wrapped_in_prose():
+    item = event()
+    fenced = ("Here is the triage result:\n```json\n"
+              + json.dumps({"verdicts": [verdict(item)]})
+              + "\n```\nLet me know if you need anything else.")
+    client = MetaModelClient(MetaModelConfig(api_key="test"))
+    fake_sdk_text(client, [fenced, json.dumps(wire_assessment(item))])
+    results = client.analyze_events([item])
+    assert client.last_triage[0].source == "meta-model-api"
+    assert client.last_triage[0].priority == 5
+    assert results[0].reasoning_source == "meta-model-api"
+
+
+def test_every_response_field_has_a_default_and_is_normalised():
+    from netsentinel.llm.schemas import IOCBundle, TriageBatchOutput, TriageOutput
+
+    # Requirement: a partial reply must always parse, so no field is required.
+    for wire_model in (AssessmentOutput, TriageOutput, TriageBatchOutput, IOCBundle):
+        assert not any(
+            field.is_required() for field in wire_model.model_fields.values()
+        ), f"{wire_model.__name__} still has required fields"
+    assert AssessmentOutput.model_validate(None).confidence_score == 0.5
+    assert AssessmentOutput.model_validate({}).iocs == []
+    assert AssessmentOutput.model_validate({}).ioc_details.total == 0
+    assert TriageBatchOutput.model_validate([]).verdicts == []
+    assert TriageBatchOutput.model_validate({"unexpected": 1}).verdicts == []
+
+    # Values are coerced rather than rejected.
+    assert AssessmentOutput.model_validate({"confidence_score": 87}).confidence_score == 0.87
+    assert AssessmentOutput.model_validate(
+        {"confidence_score": "87%"}).confidence_score == 0.87
+    assert AssessmentOutput.model_validate(
+        {"kill_chain_stage": "command_and_control"}).kill_chain_stage == "Command and Control"
+    assert AssessmentOutput.model_validate({"severity": "SEVERE"}).severity == "high"
+    assert AssessmentOutput.model_validate(
+        {"mitre_technique": "T1041 - Exfiltration"}).mitre_technique_id == "T1041"
+    bundle = AssessmentOutput.model_validate(
+        {"ioc_details": "203.0.113.10, evil.example"}).ioc_details
+    assert bundle.ip_addresses == ["203.0.113.10"] and bundle.domains == ["evil.example"]
+    # Comma-separated prose stays a single action.
+    actions = AssessmentOutput.model_validate(
+        {"recommended_actions": "Block 203.0.113.10, then isolate the host"}
+    ).recommended_actions
+    assert actions == ["Block 203.0.113.10, then isolate the host"]
+    triage = TriageBatchOutput.model_validate({
+        "triage": [{"id": "e1", "priority": 9, "noise": "no", "confidence": "40%"}]
+    }).verdicts[0]
+    assert (triage.event_id, triage.priority, triage.is_noise,
+            triage.confidence_score) == ("e1", 5, False, 0.4)
+
+
+def test_unknown_and_duplicate_triage_identifiers_are_repaired_without_misassigning():
+    item = event()
+    cases = (
+        ([verdict(item, event_id="invented-id")], "offline-deterministic"),
+        ([], "offline-deterministic"),
+        ([verdict(item), verdict(item, rationale="duplicate")], "meta-model-api"),
+    )
+    for batch, expected_source in cases:
         client = MetaModelClient(MetaModelConfig(api_key="test"))
-        calls = fake_sdk(client, [{"verdicts": batch}])
+        # Tier-1 (repaired) + a single Tier-2 assessment for the only event.
+        calls = fake_sdk(client, [{"verdicts": batch}, wire_assessment(item)])
         results = client.analyze_events([item])
-        assert len(calls) == 1
-        assert client.last_triage[0].event_id == item.event_id
-        assert client.last_triage[0].source == "offline-deterministic"
-        assert results[0].reasoning_source == "offline-deterministic"
+        assert len(calls) == 2
+        assert calls[0]["model"] == "muse-spark-1.3"
+        assert calls[1]["model"] == "muse-wonder-1.0"
+        assert [v.event_id for v in client.last_triage] == [item.event_id]
+        assert client.last_triage[0].source == expected_source
+        assert results[0].reasoning_source == "meta-model-api"
+        assert results[0].iocs == item.iocs
+        assert client.mode == "meta-model-api"
 
 
 def test_noise_filter_preserves_detection_and_iocs_without_deep_api_call():

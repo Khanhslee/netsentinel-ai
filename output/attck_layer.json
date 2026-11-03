@@ -1,0 +1,91 @@
+{
+  "name": "NetSentinel AI — Observed Threats",
+  "versions": {
+    "attack": "15",
+    "navigator": "4.9.1",
+    "layer": "4.5"
+  },
+  "domain": "enterprise-attack",
+  "description": "Observed network behaviours mapped by NetSentinel AI. Scores reflect heuristic severity, not confirmed compromise.",
+  "sorting": 3,
+  "layout": {
+    "layout": "side",
+    "showID": true,
+    "showName": true,
+    "expandedSubtechniques": "annotated"
+  },
+  "hideDisabled": false,
+  "techniques": [
+    {
+      "techniqueID": "T1041",
+      "tactic": "exfiltration",
+      "score": 55,
+      "comment": "EXFILTRATION | host 10.0.0.9 | 10.0.0.9 transferred 1,500,000 bytes to 198.51.100.5:443 while receiving only 0 bytes back (ratio 1500000:1), a potential data exfiltration channel.",
+      "enabled": true,
+      "color": "#fb923c"
+    },
+    {
+      "techniqueID": "T1046",
+      "tactic": "discovery",
+      "score": 80,
+      "comment": "PORT_SCAN | host 10.0.0.7 | 10.0.0.7 probed 40 ports on 10.0.0.50 (SYN) within 3.9s, indicating network reconnaissance.",
+      "enabled": true,
+      "color": "#ef4444"
+    },
+    {
+      "techniqueID": "T1071.001",
+      "tactic": "command-and-control",
+      "score": 95,
+      "comment": "BEACON | host 10.0.0.5 | 10.0.0.5 maintained 10 TCP connections to 203.0.113.10:8080 at a mean interval of 60.0s (jitter 0.000), consistent with C2 beaconing.",
+      "enabled": true,
+      "color": "#ef4444"
+    },
+    {
+      "techniqueID": "T1071.004",
+      "tactic": "command-and-control",
+      "score": 80,
+      "comment": "DNS_TUNNELING | host 10.0.0.8 | 10.0.0.8 sent 12 DNS queries under 'tunnel.evil' (max label 30 chars, TXT=True), a DNS tunneling indicator.",
+      "enabled": true,
+      "color": "#ef4444"
+    },
+    {
+      "techniqueID": "T1568.002",
+      "tactic": "command-and-control",
+      "score": 80,
+      "comment": "NXDOMAIN_STORM | host 10.0.0.6 | 10.0.0.6 generated 15 failed (NXDOMAIN) lookups across 15 domain families, consistent with DGA probing.\nDGA | host 10.0.0.6 | 10.0.0.6 queried 14 high-entropy, algorithmically-looking domains (avg entropy 3.69), a DGA / C2 fallback indicator.",
+      "enabled": true,
+      "color": "#ef4444"
+    }
+  ],
+  "gradient": {
+    "colors": [
+      "#fb923c",
+      "#ef4444"
+    ],
+    "minValue": 0,
+    "maxValue": 100
+  },
+  "legendItems": [
+    {
+      "label": "High / Critical observed behaviour",
+      "color": "#ef4444"
+    },
+    {
+      "label": "Low / Medium observed behaviour",
+      "color": "#fb923c"
+    }
+  ],
+  "metadata": [
+    {
+      "name": "producer",
+      "value": "NetSentinel AI"
+    },
+    {
+      "name": "scoring",
+      "value": "critical=95, high=80, medium=55, low=30"
+    }
+  ],
+  "selectTechniquesAcrossTactics": true,
+  "selectSubtechniquesWithParent": false,
+  "selectVisibleTechniques": false
+}
